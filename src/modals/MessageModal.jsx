@@ -16,7 +16,7 @@ export const MessageModal = ({
     if (show && !disableTimer) {
       const timeout = setTimeout(() => {
         handleClose();
-        setMessage("");
+        setMessage({});
       }, 3000);
       return () => clearTimeout(timeout);
     }
@@ -42,7 +42,7 @@ export const MessageModal = ({
 MessageModal.propTypes = {
   show: PropTypes.bool.isRequired,
   setShow: PropTypes.func.isRequired,
-  message: PropTypes.object.isRequired,
+  message: PropTypes.object,
   setMessage: PropTypes.func.isRequired,
   disableTimer: PropTypes.bool,
 };

@@ -6,7 +6,6 @@ import PropTypes from "prop-types";
 
 const MessageCard = ({
   message,
-  response,
   responseRequired,
   setResponse,
   handleSubmit,
@@ -30,7 +29,7 @@ const MessageCard = ({
     <>
       <CSSTransition
         in={showContent}
-        timeout={700} // Timeout should match the transition duration in CSS
+        timeout={700}
         classNames="fade"
         nodeRef={nodeRef}
         unmountOnExit
@@ -65,7 +64,7 @@ const MessageCard = ({
 MessageCard.propTypes = {
   message: PropTypes.string,
   response: PropTypes.string,
-  responseRequired: PropTypes.bool,
+  responseRequired: PropTypes.string,
   setResponse: PropTypes.func,
   handleSubmit: PropTypes.func,
 };

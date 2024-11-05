@@ -4,20 +4,21 @@ import { useState, useEffect, useMemo } from "react";
 import Navigation from "./components/NavBar.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import PerformPage from "./pages/PerformPage.jsx";
-import { PrivateRoute } from "./auth/privateRouteOLD.jsx";
+import { PrivateRoute } from "./auth/privateRoute.jsx";
 import { Backgrounds } from "./util/Backgrounds.js";
 // import { useToken } from "./auth/useTokenOLD.jsx";
 import About from "./pages/About.jsx";
 import PlayerProfile from "./pages/PlayerProfile.jsx";
 import { Spacer } from "./util/Spacer.jsx";
-import { useUserContext } from "./auth/useUserContext.js";
-// import useWebSocket from "./util/useWebSocket.jsx";
-// import axios from "axios";
+import { useUserContext } from "./hooks/useUserContext.js";
+import { GameStateProvider } from "./context/GameStateContext.jsx";
+import { AudiencePage } from "./pages/AudiencePage.jsx";
+import Callback from "./auth/Callback.jsx";
 
 function App() {
+  const { user } = useUserContext();
   // const [token, saveToken, ] = useToken();
   // const [error, setError] = useState(null);
-  const { user } = useUserContext();
   // const [currentPlayer, setCurrentPlayer] = useState({});
   // const loggedIn = useMemo(() => !!token, [token]);
   // const [codeProcessed, setCodeProcessed] = useState(false);
@@ -86,21 +87,24 @@ function App() {
             )
           }
         />
+        <Route path="/callback" element={<Callback />} />
         <Route path="/about" element={<About />} />
         <Route
           path="/performPage"
           element={
-            <PrivateRoute
-              redirectPath="/"
-              element={
-                <PerformPage
-                // loggedIn={loggedIn}
-                // LogInUrl={LogInUrl}
-                // currentPlayer={currentPlayer}
-                // setCurrentPlayer={setCurrentPlayer}
-                />
-              }
-            />
+            <GameStateProvider>
+              <PrivateRoute redirectPath="/">
+                <PerformPage />
+              </PrivateRoute>
+            </GameStateProvider>
+          }
+        />
+        <Route
+          path="/audience"
+          element={
+            <GameStateProvider>
+              <AudiencePage />
+            </GameStateProvider>
           }
         />
         <Route

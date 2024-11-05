@@ -15,7 +15,7 @@ export const WebSocketProvider = ({ children, url }) => {
 
   const connectWebSocket = () => {
     if (isConnecting.current || socket) {
-      // console.log("WebSocket is already connecting or connected.");
+      // WebSocket is already connecting or connected
       return;
     }
 
@@ -23,7 +23,6 @@ export const WebSocketProvider = ({ children, url }) => {
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
-      // console.log("Connected to WebSocket server");
       clearInterval(reconnectInterval.current);
       reconnectDelay.current = 1000;
       isManuallyClosed.current = false;
@@ -38,23 +37,18 @@ export const WebSocketProvider = ({ children, url }) => {
 
         if (data.action === "ping") {
           ws.send(JSON.stringify({ action: "pong" }));
-          // console.log("Pong sent to server.");
         } else {
-          // console.log("Received message:", message);
           setIncomingMessage(message);
         }
       } catch (error) {
-        // console.error("Failed to parse message:", message);
+        console.error("Failed to parse message:", message);
       }
     };
 
-    ws.onclose = (event) => {
+    ws.onclose = () => {
       setReady(false);
       isConnecting.current = false; // Reset flag on close
       if (!isManuallyClosed.current) {
-        // console.log(
-        //   "Disconnected from WebSocket server, attempting to reconnect..."
-        // );
         reconnectWebSocket(); // Reconnect when the connection closes
       }
     };
@@ -67,18 +61,26 @@ export const WebSocketProvider = ({ children, url }) => {
     setSocket(ws);
   };
 
+  const disconnectWebSocket = () => {
+    if (socket) {
+      isManuallyClosed.current = true; // Mark the socket as manually closed to prevent reconnect
+      socket.close(); // Close the WebSocket connection
+      setReady(false); // Update ready state to false
+      setSocket(null); // Remove the reference to the closed socket
+    }
+  };
+
   const reconnectWebSocket = () => {
     reconnectInterval.current = setTimeout(() => {
       console.log(
         `Attempting to reconnect in ${reconnectDelay.current / 1000} seconds...`
       );
       connectWebSocket();
-      // Increase the delay for the next reconnection attempt
       reconnectDelay.current = Math.min(
         reconnectDelay.current * 2,
         maxReconnectDelay
       ); // Exponential backoff
-    }, reconnectDelay.current); // Use the current delay for the timeout
+    }, reconnectDelay.current);
   };
 
   useEffect(() => {
@@ -93,13 +95,23 @@ export const WebSocketProvider = ({ children, url }) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(message);
     } else {
-      console.error("WebSocket is not open. Ready state:", socket.readyState);
+      console.error(
+        "WebSocket is not open. Ready state:",
+        socket ? socket.readyState : "No socket"
+      );
     }
   };
 
   return (
     <WebSocketContext.Provider
-      value={{ socket, sendMessage, incomingMessage, ready }}
+      value={{
+        socket,
+        sendMessage,
+        incomingMessage,
+        ready,
+        connectWebSocket,
+        disconnectWebSocket,
+      }}
     >
       {children}
     </WebSocketContext.Provider>
@@ -112,5 +124,3 @@ WebSocketProvider.propTypes = {
 };
 
 export { WebSocketContext };
-
-// export const useWebSocket = () => useContext(WebSocketContext);

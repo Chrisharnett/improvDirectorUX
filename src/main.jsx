@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { WebSocketProvider } from "./util/WebSocketContext.jsx";
-import { UserProvider } from "./auth/UserContext.jsx";
+import { UserProvider } from "./context/UserContext.jsx";
+import { TokenProvider } from "./context/TokenContext.jsx";
 
 const websocketURL =
   import.meta.env.VITE_ENV === "prod"
@@ -12,10 +13,12 @@ const websocketURL =
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <UserProvider>
-      <WebSocketProvider url={websocketURL}>
-        <App />
-      </WebSocketProvider>
-    </UserProvider>
+    <TokenProvider>
+      <UserProvider>
+        <WebSocketProvider url={websocketURL}>
+          <App />
+        </WebSocketProvider>
+      </UserProvider>
+    </TokenProvider>
   </StrictMode>
 );

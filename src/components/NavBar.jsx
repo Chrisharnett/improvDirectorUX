@@ -2,17 +2,22 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Container from "react-bootstrap/Container";
 import { Link } from "react-router-dom";
-import { useUserContext } from "../auth/useUserContext";
+import { useUserContext } from "../hooks/useUserContext";
 import { useNavigate } from "react-router-dom";
 import getCognitoURL from "../auth/getCognitoURL";
 
 const Navigation = () => {
   const navigate = useNavigate();
-  const { user, removeToken } = useUserContext();
+  const { user, removeUser } = useUserContext();
 
   const logOutHandler = () => {
-    removeToken();
+    removeUser();
     navigate("/");
+  };
+
+  const handleClickLogin = () => {
+    const loginUrl = getCognitoURL();
+    window.location.href = loginUrl;
   };
 
   return (
@@ -47,12 +52,7 @@ const Navigation = () => {
             </Nav>
           ) : (
             <Nav>
-              <Nav.Link
-                href="#login"
-                onClick={() => {
-                  window.location.href = getCognitoURL;
-                }}
-              >
+              <Nav.Link href="#login" onClick={handleClickLogin}>
                 <h4>Login</h4>
               </Nav.Link>
             </Nav>

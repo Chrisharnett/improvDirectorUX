@@ -1,4 +1,5 @@
 import { Button, Row, Col } from "react-bootstrap";
+import PropTypes from "prop-types";
 
 const ReactionButtons = ({
   onThumbsUpClick,
@@ -43,6 +44,14 @@ const ReactionButtons = ({
       </Col>
     </Row>
   );
+};
+
+ReactionButtons.propTypes = {
+  onThumbsUpClick: PropTypes.func.isRequired,
+  onThumbsDownClick: PropTypes.func.isRequired,
+  onMoveOnClick: PropTypes.func.isRequired,
+  disableButtons: PropTypes.bool.isRequired,
+  disableLikeButton: PropTypes.bool.isRequired,
 };
 
 export default ReactionButtons;

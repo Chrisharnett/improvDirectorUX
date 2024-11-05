@@ -1,69 +1,70 @@
 import { Container, Button, Form } from "react-bootstrap";
 import { useEffect, useState } from "react";
-import useWebSocket from "../util/useWebSocket.jsx";
+import useWebSocket from "../hooks/useWebSocket.jsx";
 import PropTypes from "prop-types";
+import { useUserContext } from "../hooks/useUserContext.js";
+import { useTokenContext } from "../hooks/useTokenContext.jsx";
 
-const PlayerProfile = ({ currentPlayer, setCurrentPlayer }) => {
-  const [screenName, setScreenName] = useState("");
-  const [instrument, setInstrument] = useState("");
+const PlayerProfile = () => {
+  const [newScreenName, setNewScreenName] = useState("");
+  const [newInstrument, setNewInstrument] = useState("");
   const { sendMessage, incomingMessage, ready } = useWebSocket();
-
-  useEffect(() => {
-    if (currentPlayer && currentPlayer.userId) {
-      setScreenName(currentPlayer.screenName || "");
-      setInstrument(currentPlayer.instrument || "");
-    }
-  }, [currentPlayer]);
+  const { currentPlayer, updateCurrentPlayer } = useUserContext();
+  const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
 
   useEffect(() => {
     const sendMessageWhenReady = async () => {
-      if (ready && currentPlayer?.userId) {
-        sendMessage(
-          JSON.stringify({
-            action: "getCurrentPlayer",
-            currentPlayer: currentPlayer,
-          })
-        );
-        console.log("getCurrentPlayer");
+      if (accessToken && isTokenExpired(accessToken)) {
+        await updateRefreshToken();
       }
+
+      sendMessage(
+        JSON.stringify({
+          action: "getCurrentPlayer",
+          currentPlayer: currentPlayer,
+        })
+      );
     };
     if (ready && currentPlayer?.userId) {
       sendMessageWhenReady();
     }
-  }, [ready, currentPlayer?.userId]);
+  }, [ready, currentPlayer]);
 
   useEffect(() => {
     if (incomingMessage) {
       const message = JSON.parse(incomingMessage);
       if (message.action === "playerProfileData") {
-        const player = {
-          ...currentPlayer,
+        updateCurrentPlayer({
           screenName: message.currentPlayer.screenName,
           instrument: message.currentPlayer.instrument,
-        };
-        setCurrentPlayer(player);
-        setScreenName(player.screenName);
-        setInstrument(player.instrument);
+        });
       }
     }
   }, [incomingMessage]);
 
-  const handleUpdateProfile = (e) => {
-    const updatedPlayer = {
+  const handleUpdateProfile = async () => {
+    updateCurrentPlayer({
+      screenName: newScreenName,
+      instrument: newInstrument,
+    });
+    const player = {
       ...currentPlayer,
-      screenName,
-      instrument,
+      screenName: newScreenName,
+      instrument: newInstrument,
     };
-
-    setCurrentPlayer(updatedPlayer);
+    if (accessToken && isTokenExpired(accessToken)) {
+      await updateRefreshToken();
+    }
 
     sendMessage(
       JSON.stringify({
         action: "updateProfile",
-        currentPlayer: updatedPlayer,
+        currentPlayer: player,
       })
     );
   };
+
+  const { screenName, instrument } = currentPlayer;
 
   return (
     <>
@@ -76,8 +77,8 @@ const PlayerProfile = ({ currentPlayer, setCurrentPlayer }) => {
             <Form.Label>Stage Name</Form.Label>
             <Form.Control
               type="text"
-              value={screenName}
-              onChange={(e) => setScreenName(e.target.value)}
+              value={newScreenName || screenName}
+              onChange={(e) => setNewScreenName(e.target.value)}
               placeholder={screenName || "What should we call you?"}
             />
           </Form.Group>
@@ -86,8 +87,8 @@ const PlayerProfile = ({ currentPlayer, setCurrentPlayer }) => {
             <Form.Control
               as="textarea"
               rows={3}
-              value={instrument || ""}
-              onChange={(e) => setInstrument(e.target.value)}
+              value={newInstrument || instrument}
+              onChange={(e) => setNewInstrument(e.target.value)}
               placeholder={
                 instrument || "What do you play? How do you play it?"
               }

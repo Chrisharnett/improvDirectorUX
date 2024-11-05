@@ -4,21 +4,32 @@ import { useEffect, useState, useRef } from "react";
 import { CSSTransition } from "react-transition-group";
 import ResponseBox from "../components/ResponseBox";
 import PropTypes from "prop-types";
+import { useUserContext } from "../hooks/useUserContext.js";
+import useWebSocket from "../hooks/useWebSocket.jsx";
+import { useTokenContext } from "../hooks/useTokenContext.jsx";
+import { useGameState } from "../hooks/useGameState.jsx";
 
 const LobbyView = ({
   feedbackQuestion,
   setFeedbackQuestion,
-  sendMessage,
-  roomName,
-  currentPlayer,
   setChatMessage,
 }) => {
   const [disableButton, setDisableButton] = useState(true);
   const [error, setError] = useState("");
   const [showContent, setShowContent] = useState(false);
-  const [typedResponse, setTypedResponse] = useState("");
+  const [hideResponseBox, setHideResponseBox] = useState(true);
+  const { currentPlayer } = useUserContext();
+  const { gameState } = useGameState();
+  const { sendMessage } = useWebSocket();
+  const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
 
   const nodeRef = useRef(null);
+
+  useEffect(() => {
+    if (feedbackQuestion.options?.length == 0) {
+      setHideResponseBox(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (currentPlayer.roomCreator) {
@@ -27,39 +38,51 @@ const LobbyView = ({
     setShowContent(true);
   }, [currentPlayer.roomCreator]);
 
-  const handleLobbyFeedback = (option) => {
+  const handleLobbyFeedback = async (option) => {
     if (!option.trim()) {
       setError("Response cannot be empty.");
     } else {
+      let token = accessToken;
+      if (accessToken && isTokenExpired(accessToken)) {
+        token = await updateRefreshToken();
+      }
       sendMessage(
         JSON.stringify({
           action: "performerLobbyFeedbackResponse",
-          roomName: roomName,
+          roomName: gameState.roomName,
           feedbackQuestion: feedbackQuestion,
           currentPlayer: currentPlayer,
           response: option,
+          token: token,
         })
       );
       setChatMessage(option);
-      setFeedbackQuestion("");
+      setHideResponseBox(true);
+      setFeedbackQuestion({});
       setError("");
     }
   };
 
-  const handleStartPerformance = (e) => {
+  const handleStartPerformance = async (e) => {
     e.preventDefault();
+    let token = accessToken;
+    if (accessToken && isTokenExpired(accessToken)) {
+      token = await updateRefreshToken();
+    }
     sendMessage(
       JSON.stringify({
         action: "announceStartPerformance",
-        roomName: roomName,
+        roomName: gameState.roomName,
         currentPlayer: currentPlayer,
+        token: token,
       })
     );
     sendMessage(
       JSON.stringify({
         action: "startPerformance",
-        roomName: roomName,
+        roomName: gameState.roomName,
         currentPlayer: currentPlayer,
+        token: token,
       })
     );
     setDisableButton(true);
@@ -76,8 +99,8 @@ const LobbyView = ({
       >
         <Row ref={nodeRef}>
           {feedbackQuestion &&
-            (feedbackQuestion.question?.options?.length > 0 ? (
-              feedbackQuestion.question.options.map((option, index) => (
+            (feedbackQuestion.options?.length > 0 ? (
+              feedbackQuestion.options.map((option, index) => (
                 <Col key={index}>
                   <OptionCard
                     key={index}
@@ -87,7 +110,13 @@ const LobbyView = ({
                 </Col>
               ))
             ) : (
-              <ResponseBox handleSubmit={handleLobbyFeedback} />
+              <>
+                {setHideResponseBox(false)}
+                <ResponseBox
+                  hidden={hideResponseBox}
+                  handleSubmit={handleLobbyFeedback}
+                />
+              </>
             ))}
 
           {currentPlayer?.roomCreator && (
@@ -106,11 +135,9 @@ const LobbyView = ({
 };
 
 LobbyView.propTypes = {
-  feedbackQuestion: PropTypes.string,
+  feedbackQuestion: PropTypes.object,
   setFeedbackQuestion: PropTypes.func,
   sendMessage: PropTypes.func,
-  roomName: PropTypes.string,
-  currentPlayer: PropTypes.object,
   setChatMessage: PropTypes.func,
 };
 

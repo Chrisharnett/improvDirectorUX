@@ -1,20 +1,21 @@
 import { Card, Row } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import ReactionButtons from "./ReactionButtons";
+import PropTypes from "prop-types";
+import { useUserContext } from "../hooks/useUserContext";
+import { useGameState } from "../hooks/useGameState.jsx";
+import useWebSocket from "../hooks/useWebSocket.jsx";
+import { useTokenContext } from "../hooks/useTokenContext.jsx";
 
-const PromptCard = ({
-  promptTitle,
-  sendMessage,
-  prompt,
-  currentPlayer,
-  roomName,
-  hideButtons,
-  setHideButtons,
-}) => {
+const PromptCard = ({ promptTitle, prompt, hideButtons, setHideButtons }) => {
   const [title, setTitle] = useState("");
-  const [showContent, setShowContent] = useState(false);
   const [disableButtons, setDisableButtons] = useState(false);
   const [disableLikeButton, setDisableLikeButton] = useState(false);
+  const { currentPlayer } = useUserContext();
+  const { sendMessage } = useWebSocket();
+  const { gameState } = useGameState();
+  const { roomName } = gameState;
+  const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
 
   useEffect(() => {
     if (promptTitle === "groupPrompt") {
@@ -23,17 +24,18 @@ const PromptCard = ({
       setTitle("Final Prompt");
       setHideButtons(true);
     } else if (promptTitle !== "Final Prompt") {
-      setTitle(currentPlayer.screenName);
-    }
-    if (prompt) {
-      setShowContent(true);
+      setTitle(currentPlayer.screenName || promptTitle);
     }
     setDisableButtons(false);
     setDisableLikeButton(false);
   }, [prompt, promptTitle]);
 
-  const handleThumbsUp = () => {
+  const handleThumbsUp = async () => {
     setDisableLikeButton(true);
+    let token = accessToken;
+    if (accessToken && isTokenExpired(accessToken)) {
+      token = await updateRefreshToken();
+    }
     sendMessage(
       JSON.stringify({
         action: "reactToPrompt",
@@ -42,12 +44,17 @@ const PromptCard = ({
         prompt: prompt,
         roomName: roomName,
         currentPlayer: currentPlayer,
+        token: token,
       })
     );
   };
 
-  const handleThumbsDown = () => {
+  const handleThumbsDown = async () => {
     setDisableButtons(true);
+    let token = accessToken;
+    if (accessToken && isTokenExpired(accessToken)) {
+      token = await updateRefreshToken();
+    }
     sendMessage(
       JSON.stringify({
         action: "reactToPrompt",
@@ -56,12 +63,17 @@ const PromptCard = ({
         promptTitle: promptTitle,
         prompt: prompt,
         roomName: roomName,
+        token: token,
       })
     );
   };
 
-  const handleMoveOn = () => {
+  const handleMoveOn = async () => {
     setDisableButtons(true);
+    let token = accessToken;
+    if (accessToken && isTokenExpired(accessToken)) {
+      token = await updateRefreshToken();
+    }
     sendMessage(
       JSON.stringify({
         action: "reactToPrompt",
@@ -70,13 +82,10 @@ const PromptCard = ({
         promptTitle: promptTitle,
         prompt: prompt,
         roomName: roomName,
+        token: token,
       })
     );
   };
-
-  useEffect(() => {
-    console.log(promptTitle, ": ", prompt);
-  }, [prompt, promptTitle]);
 
   return (
     <>
@@ -93,8 +102,8 @@ const PromptCard = ({
       >
         {prompt && (
           <>
-            <Card.Title className="p-2 fs-4">{title}</Card.Title>
-            <Card.Body className="fs-4">{prompt}</Card.Body>
+            <Card.Title className="fs-4">{title}</Card.Title>
+            <Card.Body className="fs-5">{prompt}</Card.Body>
             <Card.Footer>
               {!hideButtons && (
                 <Row>
@@ -113,6 +122,13 @@ const PromptCard = ({
       </Card>
     </>
   );
+};
+
+PromptCard.propTypes = {
+  promptTitle: PropTypes.string,
+  prompt: PropTypes.string,
+  hideButtons: PropTypes.bool,
+  setHideButtons: PropTypes.func,
 };
 
 export default PromptCard;

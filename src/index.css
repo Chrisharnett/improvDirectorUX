@@ -28,10 +28,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background-attachment: fixed;
-  /* background-color: #c6cefb; */
-  /* background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat; */
 }
 
 h1 {
@@ -61,10 +57,10 @@ button:focus-visible {
 .midLayer {
   color: rgb(162, 162, 162);
   box-sizing: border-box;
-  margin: 5vh auto;
-
+  margin: 5vh 5vh 5vh 5vh;
+  padding: 50px;
   max-height: auto;
-  /* max-width: 90%; */
+  max-width: 100%;
   padding: 1em;
 }
 

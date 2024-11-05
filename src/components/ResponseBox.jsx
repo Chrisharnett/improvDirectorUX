@@ -1,8 +1,14 @@
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useState } from "react";
+import PropTypes from "prop-types";
 
-const ResponseBox = ({ handleSubmit }) => {
+const ResponseBox = ({ hidden, handleSubmit }) => {
   const [response, setResponse] = useState("");
+
+  if (hidden) {
+    return null;
+  }
+
   return (
     <Row className="align-items-center p-3">
       <Col xs="auto">
@@ -25,6 +31,11 @@ const ResponseBox = ({ handleSubmit }) => {
       </Col>
     </Row>
   );
+};
+
+ResponseBox.propTypes = {
+  handleSubmit: PropTypes.func.isRequired,
+  hidden: PropTypes.bool,
 };
 
 export default ResponseBox;

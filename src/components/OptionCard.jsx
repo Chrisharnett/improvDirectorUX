@@ -1,6 +1,7 @@
 import { Card, Row } from "react-bootstrap";
 import { CSSTransition } from "react-transition-group";
 import { useEffect, useState, useRef } from "react";
+import PropTypes from "prop-types";
 
 const OptionCard = ({ message, onClick }) => {
   const [showContent, setShowContent] = useState(false);
@@ -16,7 +17,7 @@ const OptionCard = ({ message, onClick }) => {
     <>
       <CSSTransition
         in={showContent}
-        timeout={700} // Timeout should match the transition duration in CSS
+        timeout={700}
         classNames="fade"
         nodeRef={nodeRef}
         unmountOnExit
@@ -45,6 +46,11 @@ const OptionCard = ({ message, onClick }) => {
       </CSSTransition>
     </>
   );
+};
+
+OptionCard.propTypes = {
+  message: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default OptionCard;

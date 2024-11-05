@@ -1,6 +1,6 @@
 import { Container } from "react-bootstrap";
 import { useEffect, useState } from "react";
-import useWebSocket from "../util/useWebSocket.jsx";
+import useWebSocket from "../hooks/useWebSocket.jsx";
 import MessageCard from "../components/MessageCard.jsx";
 
 const About = () => {

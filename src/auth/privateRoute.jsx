@@ -1,14 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useUserContext } from "./useUserContext";
+import { useUserContext } from "../hooks/useUserContext.js";
 import PropTypes from "prop-types";
 
 export const PrivateRoute = ({ redirectPath = "/", children }) => {
-  const { user, loading } = useUserContext();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
+  const { user } = useUserContext();
   if (!user) {
     return <Navigate to={redirectPath} replace />;
   }

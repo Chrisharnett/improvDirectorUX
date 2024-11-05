@@ -1,27 +1,27 @@
-import { Row, Button } from "react-bootstrap";
+import { Row, Col, Button } from "react-bootstrap";
 import PromptCard from "../components/PromptCard";
 import React, { useEffect, useState, useRef } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import PropTypes from "prop-types";
+import { useUserContext } from "../hooks/useUserContext";
+import { useGameState } from "../hooks/useGameState";
+import useWebSocket from "../hooks/useWebSocket.jsx";
+import { useTokenContext } from "../hooks/useTokenContext.jsx";
 
-const GameView = ({
-  showPrompt,
-  currentPlayer,
-  roomName,
-  sendMessage,
-  finalPrompt,
-  gameStatus,
-}) => {
+const GameView = () => {
   const [buttonText, setButtonText] = useState("Get Ending");
-  const [lastPrompt, setLastPrompt] = useState();
   const [disableButton, setDisableButton] = useState(false);
-  const [promptKeys, setPromptKeys] = useState([]); // Track prompt keys for triggering individual fades
+  const [promptKeys, setPromptKeys] = useState([]);
   const [hideButtons, setHideButtons] = useState(false);
+  const { gameState } = useGameState();
+  const { roomName, finalPrompt, gameStatus } = gameState;
+  const { currentPlayer } = useUserContext();
+  const { sendMessage } = useWebSocket();
+  const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
 
   const refs = useRef({});
 
   useEffect(() => {
-    setPromptKeys(Object.keys(currentPlayer.currentPrompts)); // Initially set the prompt keys
+    setPromptKeys(Object.keys(currentPlayer.currentPrompts));
   }, [currentPlayer.currentPrompts]);
 
   useEffect(() => {
@@ -29,11 +29,6 @@ const GameView = ({
       setDisableButton(false);
       setButtonText("End and Log Performance");
       setHideButtons(true);
-      for (let [key, prompt] of Object.entries(currentPlayer.currentPrompts)) {
-        if (key === "endPrompt") {
-          setLastPrompt(prompt.prompt);
-        }
-      }
     } else if (gameStatus === "improvise") {
       setHideButtons(false);
     } else if (gameStatus === "waiting") {
@@ -57,25 +52,35 @@ const GameView = ({
     }
   });
 
-  const handleEndSong = () => {
-    if (finalPrompt) {
+  const handleEndSong = async () => {
+    if (currentPlayer.finalPrompt) {
       if (currentPlayer.roomCreator) {
+        let token = accessToken;
+        if (accessToken && isTokenExpired(accessToken)) {
+          token = await updateRefreshToken();
+        }
         sendMessage(
           JSON.stringify({
             action: "performanceComplete",
             roomName: roomName,
             currentPlayer: currentPlayer,
+            token: token,
           })
         );
       }
       setDisableButton(true);
     } else {
       setDisableButton(true);
+      let token = accessToken;
+      if (accessToken && isTokenExpired(accessToken)) {
+        token = await updateRefreshToken();
+      }
       sendMessage(
         JSON.stringify({
           action: "endSong",
           roomName: roomName,
           currentPlayer: currentPlayer,
+          token: token,
         })
       );
     }
@@ -89,21 +94,24 @@ const GameView = ({
 
   const generateUniqueKey = (key) =>
     `${key}-${currentPlayer.currentPrompts[key]?.prompt}`;
+
   return (
-    <>
+    <Row>
       {nonPerformerPrompts.length < 1 && !performerPrompt ? (
-        <PromptCard
-          promptTitle={"Waiting"}
-          prompt={"Your prompt will be here soon!"}
-          userId={currentPlayer.userId}
-          sendMessage={sendMessage}
-          roomName={roomName}
-          currentPlayer={currentPlayer}
-        />
+        <Col sm={12} md={5}>
+          <PromptCard
+            promptTitle={"Waiting"}
+            prompt={"Your prompt will be here soon!"}
+            userId={currentPlayer.userId}
+            sendMessage={sendMessage}
+            roomName={roomName}
+            currentPlayer={currentPlayer}
+          />
+        </Col>
       ) : (
         <>
           <TransitionGroup component={null}>
-            {nonPerformerPrompts.map((key, index) => {
+            {nonPerformerPrompts.map((key) => {
               const nodeRef = refs.current[key];
               const uniqueKey = generateUniqueKey(key);
               return (
@@ -113,18 +121,15 @@ const GameView = ({
                   classNames="fade"
                   nodeRef={nodeRef}
                 >
-                  <Row ref={nodeRef}>
+                  <Col ref={nodeRef} sm={12} md={5}>
                     <PromptCard
                       promptTitle={key}
                       prompt={currentPlayer.currentPrompts[key]?.prompt}
-                      userId={currentPlayer.userId}
                       sendMessage={sendMessage}
-                      roomName={roomName}
-                      currentPlayer={currentPlayer}
                       hideButtons={hideButtons}
                       setHideButtons={setHideButtons}
                     />
-                  </Row>
+                  </Col>
                 </CSSTransition>
               );
             })}
@@ -137,19 +142,16 @@ const GameView = ({
                 classNames="fade"
                 nodeRef={refs.current[performerPrompt]}
               >
-                <Row ref={refs.current[performerPrompt]}>
+                <Col ref={refs.current[performerPrompt]} sm={12} md={5}>
                   <PromptCard
                     promptTitle={performerPrompt}
                     prompt={
                       currentPlayer.currentPrompts[performerPrompt]?.prompt
                     }
-                    userId={currentPlayer.userId}
                     sendMessage={sendMessage}
-                    roomName={roomName}
-                    currentPlayer={currentPlayer}
                     hideButtons={hideButtons}
                   />
-                </Row>
+                </Col>
               </CSSTransition>
             )}
           </TransitionGroup>
@@ -166,17 +168,10 @@ const GameView = ({
           {buttonText}
         </Button>
       )}
-    </>
+    </Row>
   );
 };
 
-GameView.propTypes = {
-  showPrompt: PropTypes.bool,
-  currentPlayer: PropTypes.object,
-  roomName: PropTypes.string,
-  sendMessage: PropTypes.func,
-  finalPrompt: PropTypes.bool,
-  gameStatus: PropTypes.string,
-};
+GameView.propTypes = {};
 
 export default GameView;
