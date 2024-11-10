@@ -60,6 +60,12 @@ export const useMessageFilter = () => {
         break;
       }
 
+      case "Theme Selection": {
+        saveNewGameState(message);
+        setChatMessage("Let's select a theme for the song.");
+        break;
+      }
+
       case "improvise":
         saveNewGameState(message);
         setChatMessage("");
@@ -96,6 +102,9 @@ export const useMessageFilter = () => {
         break;
       case "registration":
         defaultActions();
+        break;
+      case "newCentralTheme":
+        setCurrentStep(2);
         break;
       case "newGameState":
         saveNewGameState(message.gameState);

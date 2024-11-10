@@ -1,4 +1,4 @@
-import { Container } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { CSSTransition } from "react-transition-group";
@@ -8,16 +8,7 @@ import getCognitoURL from "../auth/getCognitoURL";
 
 const HomePage = () => {
   const [showContainer, setShowContainer] = useState(false);
-  const [linkMessage, setLinkMessage] = useState("log in and play music.");
-  const { user } = useUserContext();
-
   const nodeRef = useRef(null);
-
-  useEffect(() => {
-    if (user) {
-      setLinkMessage("play music.");
-    }
-  }, [user]);
 
   useEffect(() => {
     setShowContainer(true);
@@ -41,30 +32,52 @@ const HomePage = () => {
         nodeRef={nodeRef}
       >
         <>
+          {/* Introduction */}
           <Container
-            className="d-flex align-items-center justify-content-center"
-            style={{ height: "70vh", width: "100vw" }}
-            ref={nodeRef}
+            className="midlayer glass d-flex align-items-center justify-content-center m-auto"
+            style={{ height: "auto", width: "80vw", textAlign: "center" }}
           >
             <FadeInContainer startAnimation={true}>
-              {user ? (
-                <Link to="/performPage">
-                  <Container className="midLayer glass d-flex flex-column align-items-center">
-                    <h1> Click Here to </h1>
-                    <h1> {linkMessage} </h1>
-                  </Container>
-                </Link>
-              ) : (
-                <Container
-                  className="midLayer glass d-flex flex-column align-items-center"
-                  onClick={handleClickLink}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h1> Click Here to </h1>
-                  <h1> {linkMessage} </h1>
-                </Container>
-              )}
+              <h2>Welcome to ImprovDirector!</h2>
+              <p>
+                ImprovDirector is an AI-powered platform that connects musicians
+                and audiences in real-time. Musicians receive AI-generated
+                prompts inspired by live audience feedback, making every
+                performance a unique, interactive experience.
+              </p>
             </FadeInContainer>
+          </Container>
+          {/* Join Links */}
+          <Container
+            className="d-flex align-items-center justify-content-center m-auto"
+            style={{ height: "auto", width: "100vw" }}
+            ref={nodeRef}
+          >
+            <Row>
+              <Col md={6}>
+                <FadeInContainer startAnimation={true}>
+                  <Container
+                    className="midLayer glass d-flex flex-column align-items-center"
+                    onClick={handleClickLink}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <h3> Join a Performance </h3>
+                    <p> Log in to play music. </p>
+                  </Container>
+                  {/* )} */}
+                </FadeInContainer>
+              </Col>
+              <Col md={6}>
+                <FadeInContainer startAnimation={true}>
+                  <Link to="/audience">
+                    <Container className="midLayer glass d-flex flex-column align-items-center">
+                      <h3> Join the Audience </h3>
+                      <p> View a live performance. </p>
+                    </Container>
+                  </Link>
+                </FadeInContainer>
+              </Col>
+            </Row>
           </Container>
         </>
       </CSSTransition>

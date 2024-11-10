@@ -111,7 +111,13 @@ export const TokenProvider = ({ children }) => {
 
   return (
     <TokenContext.Provider
-      value={{ accessToken, saveToken, removeToken, isTokenExpired }}
+      value={{
+        accessToken,
+        saveToken,
+        removeToken,
+        isTokenExpired,
+        updateRefreshToken,
+      }}
     >
       {children}
     </TokenContext.Provider>

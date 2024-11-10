@@ -7,8 +7,10 @@ import useWebSocket from "../hooks/useWebSocket.jsx";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";
 import { useUserContext } from "../hooks/useUserContext.js";
 import { v4 as uuidv4 } from "uuid";
+import { useState } from "react";
 
 const WelcomeView = ({ showContainer, setChatMessage, showMessageSent }) => {
+  const [showJoinOptions, setShowJoinOptions] = useState(true);
   const { gameState, updateGameState } = useGameState();
   const { sendMessage } = useWebSocket();
   const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
@@ -61,42 +63,45 @@ const WelcomeView = ({ showContainer, setChatMessage, showMessageSent }) => {
       })
     );
     showMessageSent();
+    setShowJoinOptions(false);
   };
 
   return (
     <>
-      <CSSTransition
-        in={showContainer}
-        timeout={700}
-        classNames="fade"
-        unmountOnExit
-      >
-        <>
-          <Row>
-            <Col>
-              <OptionCard
-                message={"Join Performance"}
-                onClick={handleChooseJoinPerformance}
+      {showJoinOptions && (
+        <CSSTransition
+          in={showContainer}
+          timeout={700}
+          classNames="fade"
+          unmountOnExit
+        >
+          <>
+            <Row>
+              <Col>
+                <OptionCard
+                  message={"Join Performance"}
+                  onClick={handleChooseJoinPerformance}
+                />
+              </Col>
+              <Col>
+                <OptionCard
+                  message={"Create Performance"}
+                  onClick={handleChooseCreatePerformance}
+                />
+              </Col>
+            </Row>
+            <Form>
+              <Form.Switch
+                type="switch"
+                id="performanceMode"
+                label="Performance Mode"
+                checked={gameState.performanceMode}
+                onChange={handlePerformanceModeSwitch}
               />
-            </Col>
-            <Col>
-              <OptionCard
-                message={"Create Performance"}
-                onClick={handleChooseCreatePerformance}
-              />
-            </Col>
-          </Row>
-          <Form>
-            <Form.Switch
-              type="switch"
-              id="performanceMode"
-              label="Performance Mode"
-              checked={gameState.performanceMode}
-              onChange={handlePerformanceModeSwitch}
-            />
-          </Form>
-        </>
-      </CSSTransition>
+            </Form>
+          </>
+        </CSSTransition>
+      )}
     </>
   );
 };

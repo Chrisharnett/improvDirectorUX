@@ -110,7 +110,9 @@ const PromptCard = ({ promptTitle, prompt, hideButtons, setHideButtons }) => {
                   <ReactionButtons
                     onThumbsUpClick={handleThumbsUp}
                     onThumbsDownClick={handleThumbsDown}
-                    onMoveOnClick={handleMoveOn}
+                    middleButtonClick={handleMoveOn}
+                    middleButtonLabel={"Move On"}
+                    middleButtonHide={false}
                     disableButtons={disableButtons}
                     disableLikeButton={disableLikeButton}
                   />

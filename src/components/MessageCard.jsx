@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 
 const MessageCard = ({
   message,
+  title,
   responseRequired,
   setResponse,
   handleSubmit,
@@ -47,7 +48,7 @@ const MessageCard = ({
           ref={nodeRef}
         >
           <>
-            <Card.Title className="p-2 fs-4"></Card.Title>
+            <Card.Title className="p-2 fs-4">{title}</Card.Title>
             <Card.Body className="fs-4">{message}</Card.Body>
             <Card.Footer>
               {responseRequired && (
@@ -63,6 +64,7 @@ const MessageCard = ({
 
 MessageCard.propTypes = {
   message: PropTypes.string,
+  title: PropTypes.string,
   response: PropTypes.string,
   responseRequired: PropTypes.string,
   setResponse: PropTypes.func,

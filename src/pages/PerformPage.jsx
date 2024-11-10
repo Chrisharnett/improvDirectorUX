@@ -1,9 +1,7 @@
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import { useEffect, useState, useRef } from "react";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import MessageCard from "../components/MessageCard.jsx";
-import OptionCard from "../components/OptionCard.jsx";
-import { v4 as uuidv4 } from "uuid";
 import LobbyView from "../views/LobbyView.jsx";
 import GameView from "../views/GameView.jsx";
 import { MessageModal } from "../modals/MessageModal.jsx";
@@ -155,7 +153,6 @@ const PerformPage = () => {
           <Row className="mt-3">
             <LobbyView
               feedbackQuestion={feedbackQuestion}
-              setFeedbackQuestion={setFeedbackQuestion}
               setChatMessage={setChatMessage}
             />
           </Row>
