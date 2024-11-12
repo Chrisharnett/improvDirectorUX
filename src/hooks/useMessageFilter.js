@@ -49,18 +49,21 @@ export const useMessageFilter = () => {
         break;
 
       case "Waiting To Start": {
-        const userQuestion =
-          message.feedbackQuestion.questions[currentPlayer.userId];
-        if (userQuestion) {
-          setFeedbackQuestion(userQuestion);
-          setChatMessage(userQuestion.question);
+        if (message.action !== "heartbeat") {
+          const userQuestion =
+            message.feedbackQuestion?.questions[currentPlayer.userId];
+          if (userQuestion) {
+            setFeedbackQuestion(userQuestion);
+            setChatMessage(userQuestion.question);
+          }
+          saveNewGameState(message);
+          setCurrentStep(2);
         }
-        saveNewGameState(message);
-        setCurrentStep(2);
         break;
       }
 
       case "Theme Selection": {
+        setCurrentStep(2);
         saveNewGameState(message);
         setChatMessage("Let's select a theme for the song.");
         break;
@@ -75,9 +78,17 @@ export const useMessageFilter = () => {
         break;
 
       case "endSong":
-        saveNewGameState(message);
-        updateCurrentPlayer({ finalPrompt: true });
-        setCurrentStep(3);
+        if (message.action !== "heartbeat") {
+          saveNewGameState(message);
+          updateCurrentPlayer({ finalPrompt: true });
+          setCurrentStep(3);
+        }
+        break;
+
+      case "debrief":
+        if (message.action !== "heartbeat") {
+          setCurrentStep(5);
+        }
         break;
 
       default:
@@ -85,6 +96,12 @@ export const useMessageFilter = () => {
     }
 
     switch (message.action) {
+      case "heartbeat":
+        console.log("bum-bum");
+        break;
+      case "error":
+        updateGameState(message.gameState);
+        break;
       case "welcome":
         setChatMessage(message.message);
         if (message.responseRequired) {

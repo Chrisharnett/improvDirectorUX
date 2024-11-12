@@ -4,13 +4,11 @@ import LobbyFeedback from "../components/LobbyFeedback.jsx";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import { useEffect } from "react";
 import CentralTheme from "../components/CentralTheme.jsx";
-import { useGameState } from "../hooks/useGameState.jsx";
 
 const LobbyView = ({ feedbackQuestion, setChatMessage }) => {
   const [error, setError] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const { incomingMessage } = useWebSocket();
-  const { updateGameState } = useGameState;
 
   useEffect(() => {
     if (incomingMessage) {

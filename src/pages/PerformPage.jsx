@@ -110,6 +110,7 @@ const PerformPage = () => {
   };
 
   const handlePlayAgain = async () => {
+    setChatMessage("");
     let token = accessToken;
     if (accessToken && isTokenExpired(accessToken)) {
       token = await updateRefreshToken();
@@ -218,6 +219,7 @@ const PerformPage = () => {
                   message={chatMessage}
                   response={chatResponse}
                   responseRequired={responseRequired}
+                  responsePlaceholder="Enter the room name here."
                   setResponse={setChatResponse}
                   handleSubmit={handleChatResponse}
                 />

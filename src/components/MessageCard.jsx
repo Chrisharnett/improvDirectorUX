@@ -8,6 +8,7 @@ const MessageCard = ({
   message,
   title,
   responseRequired,
+  responsePlaceholder,
   setResponse,
   handleSubmit,
 }) => {
@@ -52,7 +53,10 @@ const MessageCard = ({
             <Card.Body className="fs-4">{message}</Card.Body>
             <Card.Footer>
               {responseRequired && (
-                <ResponseBox handleSubmit={handleClickSubmit} />
+                <ResponseBox
+                  handleSubmit={handleClickSubmit}
+                  placeHolder={responsePlaceholder}
+                />
               )}
             </Card.Footer>
           </>
@@ -67,6 +71,7 @@ MessageCard.propTypes = {
   title: PropTypes.string,
   response: PropTypes.string,
   responseRequired: PropTypes.string,
+  responsePlaceholder: PropTypes.string,
   setResponse: PropTypes.func,
   handleSubmit: PropTypes.func,
 };

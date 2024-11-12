@@ -1,7 +1,6 @@
 import { Row, Col, Button } from "react-bootstrap";
 import PromptCard from "../components/PromptCard";
 import React, { useEffect, useState, useRef } from "react";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { useUserContext } from "../hooks/useUserContext";
 import { useGameState } from "../hooks/useGameState";
 import useWebSocket from "../hooks/useWebSocket.jsx";
@@ -13,7 +12,7 @@ const GameView = () => {
   const [promptKeys, setPromptKeys] = useState([]);
   const [hideButtons, setHideButtons] = useState(false);
   const { gameState } = useGameState();
-  const { roomName, finalPrompt, gameStatus } = gameState;
+  const { roomName, finalPrompt, gameStatus, centralTheme } = gameState;
   const { currentPlayer } = useUserContext();
   const { sendMessage } = useWebSocket();
   const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
@@ -54,20 +53,18 @@ const GameView = () => {
 
   const handleEndSong = async () => {
     if (currentPlayer.finalPrompt) {
-      if (currentPlayer.roomCreator) {
-        let token = accessToken;
-        if (accessToken && isTokenExpired(accessToken)) {
-          token = await updateRefreshToken();
-        }
-        sendMessage(
-          JSON.stringify({
-            action: "performanceComplete",
-            roomName: roomName,
-            currentPlayer: currentPlayer,
-            token: token,
-          })
-        );
+      let token = accessToken;
+      if (accessToken && isTokenExpired(accessToken)) {
+        token = await updateRefreshToken();
       }
+      sendMessage(
+        JSON.stringify({
+          action: "performanceComplete",
+          roomName: roomName,
+          currentPlayer: currentPlayer,
+          token: token,
+        })
+      );
       setDisableButton(true);
     } else {
       setDisableButton(true);
@@ -96,79 +93,88 @@ const GameView = () => {
     `${key}-${currentPlayer.currentPrompts[key]?.prompt}`;
 
   return (
-    <Row>
-      {nonPerformerPrompts.length < 1 && !performerPrompt ? (
-        <Col sm={12} md={5}>
-          <PromptCard
-            promptTitle={"Waiting"}
-            prompt={"Your prompt will be here soon!"}
-            userId={currentPlayer.userId}
-            sendMessage={sendMessage}
-            roomName={roomName}
-            currentPlayer={currentPlayer}
-          />
-        </Col>
-      ) : (
-        <>
-          <TransitionGroup component={null}>
-            {nonPerformerPrompts.map((key) => {
-              const nodeRef = refs.current[key];
-              const uniqueKey = generateUniqueKey(key);
+    <>
+      <Row className="fs-3 m-2" style={{ width: "80%" }}>
+        {centralTheme}
+      </Row>
+      <Row className="d-flex flex-row flex-wrap justify-content-start">
+        {nonPerformerPrompts.length < 1 && !performerPrompt ? (
+          <Col sm={12} md={5}>
+            <PromptCard
+              cardKey={"Waiting"}
+              promptTitle={"Waiting"}
+              prompt={"Your prompt will be here soon!"}
+              userId={currentPlayer.userId}
+              sendMessage={sendMessage}
+              roomName={roomName}
+              currentPlayer={currentPlayer}
+            />
+          </Col>
+        ) : (
+          <>
+            {nonPerformerPrompts.map((nonPerformerPrompt) => {
+              const uniqueKey = generateUniqueKey(nonPerformerPrompt);
               return (
-                <CSSTransition
-                  key={uniqueKey}
-                  timeout={700}
-                  classNames="fade"
-                  nodeRef={nodeRef}
-                >
-                  <Col ref={nodeRef} sm={12} md={5}>
-                    <PromptCard
-                      promptTitle={key}
-                      prompt={currentPlayer.currentPrompts[key]?.prompt}
-                      sendMessage={sendMessage}
-                      hideButtons={hideButtons}
-                      setHideButtons={setHideButtons}
-                    />
-                  </Col>
-                </CSSTransition>
-              );
-            })}
-
-            {/* Render performerPrompt last, if it exists */}
-            {performerPrompt && (
-              <CSSTransition
-                key={generateUniqueKey(performerPrompt)}
-                timeout={700}
-                classNames="fade"
-                nodeRef={refs.current[performerPrompt]}
-              >
-                <Col ref={refs.current[performerPrompt]} sm={12} md={5}>
+                <Col key={uniqueKey} sm={12} md={5} className="d-flex">
                   <PromptCard
-                    promptTitle={performerPrompt}
+                    cardKey={uniqueKey}
+                    promptTitle={nonPerformerPrompt}
                     prompt={
-                      currentPlayer.currentPrompts[performerPrompt]?.prompt
+                      currentPlayer.currentPrompts[nonPerformerPrompt]?.prompt
                     }
                     sendMessage={sendMessage}
                     hideButtons={hideButtons}
+                    setHideButtons={setHideButtons}
+                    animationDirection={"left"}
                   />
                 </Col>
-              </CSSTransition>
+              );
+            })}
+
+            {performerPrompt && (
+              <Col
+                key={generateUniqueKey(performerPrompt)}
+                sm={12}
+                md={5}
+                className="d-flex"
+              >
+                {/* <AnimatePresence mode="wait">
+                  <motion.span
+                    key={generateUniqueKey(performerPrompt)}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={performerVariants}
+                    transition={{ duration: 0.7 }}
+                    style={{ display: "inline-block" }}
+                  > */}
+                <PromptCard
+                  cardKey={generateUniqueKey(performerPrompt)}
+                  promptTitle={performerPrompt}
+                  prompt={currentPlayer.currentPrompts[performerPrompt]?.prompt}
+                  sendMessage={sendMessage}
+                  hideButtons={hideButtons}
+                  animationDirection={"right"}
+                />
+                {/* </motion.span>
+                </AnimatePresence> */}
+              </Col>
             )}
-          </TransitionGroup>
-        </>
-      )}
-      {(!finalPrompt || (finalPrompt && currentPlayer.roomCreator)) && (
-        <Button
-          variant="warning"
-          type="button"
-          className="w-100"
-          onClick={handleEndSong}
-          disabled={disableButton}
-        >
-          {buttonText}
-        </Button>
-      )}
-    </Row>
+          </>
+        )}
+        {(!finalPrompt || (finalPrompt && currentPlayer.roomCreator)) && (
+          <Button
+            variant="warning"
+            type="button"
+            className="w-50 m-3"
+            onClick={handleEndSong}
+            disabled={disableButton}
+          >
+            {buttonText}
+          </Button>
+        )}
+      </Row>
+    </>
   );
 };
 

@@ -2,7 +2,7 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useState } from "react";
 import PropTypes from "prop-types";
 
-const ResponseBox = ({ hidden, handleSubmit, headerMessage }) => {
+const ResponseBox = ({ hidden, handleSubmit, headerMessage, placeholder }) => {
   const [response, setResponse] = useState("");
 
   if (hidden) {
@@ -21,7 +21,8 @@ const ResponseBox = ({ hidden, handleSubmit, headerMessage }) => {
             as="textarea"
             rows={2}
             type="text"
-            placeholder="Less complicated, more simple."
+            id="response"
+            placeholder={placeholder}
             value={response}
             onChange={(e) => setResponse(e.target.value)}
             className="mt-2"
@@ -45,6 +46,7 @@ ResponseBox.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   hidden: PropTypes.bool,
   headerMessage: PropTypes.string,
+  placeholder: PropTypes.string,
 };
 
 export default ResponseBox;

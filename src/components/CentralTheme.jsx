@@ -11,9 +11,9 @@ import ResponseBox from "./ResponseBox.jsx";
 
 const CentralTheme = () => {
   const [reaction, setReaction] = useState("");
-  const [idea, setIdea] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(0);
+  const [responseSent, setResponseSent] = useState(false);
   const { gameState } = useGameState();
   const { sendMessage, incomingMessage } = useWebSocket();
   const { accessToken, isTokenExpired, updateRefreshToken } = useTokenContext();
@@ -23,8 +23,15 @@ const CentralTheme = () => {
     if (incomingMessage) {
       const message = JSON.parse(incomingMessage);
       switch (message.action) {
+        case "newCentralTheme":
+          setProgress(0);
+          setResponseSent(false);
+          setCurrentStep(1);
+          break;
         case "Waiting for theme response.":
-          setCurrentStep(3);
+          if (responseSent) {
+            setCurrentStep(3);
+          }
           setProgress(message.progress);
           break;
         default:
@@ -32,6 +39,7 @@ const CentralTheme = () => {
       }
     }
   }, [incomingMessage]);
+
   const handleReaction = (reaction) => {
     setReaction(reaction);
     setCurrentStep(2);
@@ -51,17 +59,34 @@ const CentralTheme = () => {
         token: token,
       })
     );
-    setCurrentStep(3);
+    setCurrentStep(4);
+    setResponseSent(true);
+  };
+
+  const handleLikeReaction = () => {
+    handleReaction("like");
+  };
+
+  const handleDislikeReaction = () => {
+    handleReaction("dislike");
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
-          <ReactionButtons
-            onThumbsUpClick={handleReaction("like")}
-            onThumbsDownClick={handleReaction("dislike")}
-          />
+          <>
+            <ReactionButtons
+              onThumbsUpClick={handleLikeReaction}
+              onThumbsDownClick={handleDislikeReaction}
+            />
+            {progress > 0 && (
+              <Container className="fs-4">
+                {progress} of {gameState.performers.length} performers have
+                responded.
+              </Container>
+            )}
+          </>
         );
       case 2:
         return (
@@ -80,6 +105,8 @@ const CentralTheme = () => {
             responded.
           </Container>
         );
+      case 4:
+        return null;
       default:
         break;
     }

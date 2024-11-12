@@ -18,7 +18,7 @@ export const AudiencePage = () => {
   useEffect(() => {
     if (incomingMessage) {
       const message = JSON.parse(incomingMessage);
-      if (message.gameState) {
+      if (message.gameState && message.action !== "heartbeat") {
         setCurrentStep(2);
         updateGameState(message.gameState);
       }

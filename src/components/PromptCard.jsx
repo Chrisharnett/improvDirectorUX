@@ -6,16 +6,59 @@ import { useUserContext } from "../hooks/useUserContext";
 import { useGameState } from "../hooks/useGameState.jsx";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  enterExitLeftVariants,
+  enterExitRightVariants,
+} from "../config/animationConfig.js";
 
-const PromptCard = ({ promptTitle, prompt, hideButtons, setHideButtons }) => {
+const PromptCard = ({
+  promptTitle,
+  prompt,
+  hideButtons,
+  setHideButtons,
+  cardKey,
+  animationDirection,
+}) => {
   const [title, setTitle] = useState("");
   const [disableButtons, setDisableButtons] = useState(false);
   const [disableLikeButton, setDisableLikeButton] = useState(false);
+  const [animationVariant, setAnimationVariant] = useState(
+    enterExitLeftVariants
+  );
+  const [loaded, setLoaded] = useState(false);
   const { currentPlayer } = useUserContext();
   const { sendMessage } = useWebSocket();
   const { gameState } = useGameState();
   const { roomName } = gameState;
   const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
+
+  const getRandomAnimationDirection = () => {
+    const options = ["left", "right"];
+    return options[Math.floor(Math.random() * options.length)];
+  };
+
+  useEffect(() => {
+    switch (animationDirection) {
+      case "left":
+        setAnimationVariant(enterExitLeftVariants);
+        break;
+      case "right":
+        setAnimationVariant(enterExitRightVariants);
+        break;
+      case "random":
+        setAnimationVariant(
+          getRandomAnimationDirection() === "left"
+            ? enterExitLeftVariants
+            : enterExitRightVariants
+        );
+        break;
+      default:
+        // setAnimationVariant(enterExitRightVariants);
+        break;
+    }
+    setLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (promptTitle === "groupPrompt") {
@@ -87,43 +130,57 @@ const PromptCard = ({ promptTitle, prompt, hideButtons, setHideButtons }) => {
     );
   };
 
-  return (
-    <>
-      <Card
-        className="m-2 p-2"
-        style={{
-          backdropFilter: "blur(10px) saturate(50%)",
-          WebkitBackdropFilter: "blur(21px) saturate(50%)",
-          backgroundColor: "rgba(1, 1, 1, 0.3)",
-          border: "1px solid rgba(255, 255, 255, 0.01)",
-          borderRadius: "15px",
-          color: "rgb(255, 255, 255, 1)",
-        }}
-      >
-        {prompt && (
-          <>
-            <Card.Title className="fs-4">{title}</Card.Title>
-            <Card.Body className="fs-5">{prompt}</Card.Body>
-            <Card.Footer>
-              {!hideButtons && (
-                <Row>
-                  <ReactionButtons
-                    onThumbsUpClick={handleThumbsUp}
-                    onThumbsDownClick={handleThumbsDown}
-                    middleButtonClick={handleMoveOn}
-                    middleButtonLabel={"Move On"}
-                    middleButtonHide={false}
-                    disableButtons={disableButtons}
-                    disableLikeButton={disableLikeButton}
-                  />
-                </Row>
+  if (loaded) {
+    return (
+      <>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={cardKey}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={animationVariant}
+            transition={{ duration: 0.7 }}
+            style={{ display: "inline-block" }}
+          >
+            <Card
+              className="m-2 p-2"
+              style={{
+                backdropFilter: "blur(10px) saturate(50%)",
+                WebkitBackdropFilter: "blur(21px) saturate(50%)",
+                backgroundColor: "rgba(1, 1, 1, 0.3)",
+                border: "1px solid rgba(255, 255, 255, 0.01)",
+                borderRadius: "15px",
+                color: "rgb(255, 255, 255, 1)",
+              }}
+            >
+              {prompt && (
+                <>
+                  <Card.Title className="fs-4">{title}</Card.Title>
+                  <Card.Body className="fs-5">{prompt}</Card.Body>
+                  <Card.Footer>
+                    {!hideButtons && (
+                      <Row>
+                        <ReactionButtons
+                          onThumbsUpClick={handleThumbsUp}
+                          onThumbsDownClick={handleThumbsDown}
+                          middleButtonClick={handleMoveOn}
+                          middleButtonLabel={"Move On"}
+                          middleButtonHide={false}
+                          disableButtons={disableButtons}
+                          disableLikeButton={disableLikeButton}
+                        />
+                      </Row>
+                    )}
+                  </Card.Footer>
+                </>
               )}
-            </Card.Footer>
-          </>
-        )}
-      </Card>
-    </>
-  );
+            </Card>
+          </motion.span>
+        </AnimatePresence>
+      </>
+    );
+  }
 };
 
 PromptCard.propTypes = {
@@ -131,6 +188,8 @@ PromptCard.propTypes = {
   prompt: PropTypes.string,
   hideButtons: PropTypes.bool,
   setHideButtons: PropTypes.func,
+  cardKey: PropTypes.string,
+  animationDirection: PropTypes.string,
 };
 
 export default PromptCard;

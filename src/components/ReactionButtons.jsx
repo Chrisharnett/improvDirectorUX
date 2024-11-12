@@ -1,4 +1,4 @@
-import { Button, Row, Col } from "react-bootstrap";
+import { Button, Row } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const ReactionButtons = ({
@@ -11,8 +11,14 @@ const ReactionButtons = ({
   middleButtonHide = true,
 }) => {
   return (
-    <Row>
-      <Col sm={2}>
+    <Row className="d-flex justify-content-center">
+      <div
+        className={`d-flex align-items-center ${
+          middleButtonHide
+            ? "justify-content-between"
+            : "justify-content-around"
+        } w-100`}
+      >
         <Button
           variant="success"
           onClick={onThumbsUpClick}
@@ -21,9 +27,8 @@ const ReactionButtons = ({
         >
           <i className="bi bi-hand-thumbs-up"></i>
         </Button>
-      </Col>
-      {middleButtonHide ? null : (
-        <Col sm={2}>
+
+        {!middleButtonHide && (
           <Button
             variant="warning"
             onClick={middleButtonClick}
@@ -32,10 +37,8 @@ const ReactionButtons = ({
           >
             {middleButtonLabel}
           </Button>
-        </Col>
-      )}
+        )}
 
-      <Col sm={2}>
         <Button
           variant="danger"
           onClick={onThumbsDownClick}
@@ -44,7 +47,7 @@ const ReactionButtons = ({
         >
           <i className="bi bi-hand-thumbs-down"></i>
         </Button>
-      </Col>
+      </div>
     </Row>
   );
 };
