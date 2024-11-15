@@ -12,6 +12,7 @@ import { useTokenContext } from "../hooks/useTokenContext.jsx";
 import { useMessageFilter } from "../hooks/useMessageFilter.js";
 import { useResponseFilter } from "../hooks/useResponseFilter.js";
 import WelcomeView from "../views/WelcomeView.jsx";
+import { FadeInContainer } from "../animation/animations.jsx";
 
 const PerformPage = () => {
   const [chatMessage, setChatMessage] = useState("");
@@ -203,15 +204,12 @@ const PerformPage = () => {
 
   return (
     <>
-      <CSSTransition
-        in={showContainer}
-        timeout={700}
-        classNames="fade"
-        nodeRef={nodeRef}
-        unmountOnExit
+      <FadeInContainer
+        startAnimation={true}
+        // setCueNextAnimation={}
       >
         <>
-          <Container className="midLayer glass" ref={nodeRef}>
+          <Container className="midLayer glass">
             {gameState?.roomName && <h1>{gameState?.roomName}</h1>}
             {chatMessage && (
               <>
@@ -238,7 +236,7 @@ const PerformPage = () => {
             )}
           </Container>
         </>
-      </CSSTransition>
+      </FadeInContainer>
       <MessageModal
         show={showMessageModal}
         setShow={setShowMessageModal}

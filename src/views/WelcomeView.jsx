@@ -11,6 +11,7 @@ import { useState } from "react";
 
 const WelcomeView = ({ showContainer, setChatMessage, showMessageSent }) => {
   const [showJoinOptions, setShowJoinOptions] = useState(true);
+  const [decided, setDecided] = useState(false);
   const { gameState, updateGameState } = useGameState();
   const { sendMessage } = useWebSocket();
   const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
@@ -21,7 +22,8 @@ const WelcomeView = ({ showContainer, setChatMessage, showMessageSent }) => {
   };
 
   const handleChooseCreatePerformance = async () => {
-    setChatMessage("");
+    // setChatMessage("");
+    setDecided(true);
     updateGameState({ gameStatus: "registration" });
     const player = { ...currentPlayer, roomCreator: true };
     updateCurrentPlayer({ roomCreator: true });
@@ -43,7 +45,8 @@ const WelcomeView = ({ showContainer, setChatMessage, showMessageSent }) => {
   };
 
   const handleChooseJoinPerformance = async () => {
-    setChatMessage("");
+    // setChatMessage("");
+    setDecided(true);
     updateGameState({ gameStatus: "registration" });
     let id = currentPlayer.userId;
     if (!id) {
@@ -76,20 +79,23 @@ const WelcomeView = ({ showContainer, setChatMessage, showMessageSent }) => {
           unmountOnExit
         >
           <>
-            <Row>
-              <Col>
-                <OptionCard
-                  message={"Join Performance"}
-                  onClick={handleChooseJoinPerformance}
-                />
-              </Col>
-              <Col>
-                <OptionCard
-                  message={"Create Performance"}
-                  onClick={handleChooseCreatePerformance}
-                />
-              </Col>
-            </Row>
+            {!decided && (
+              <Row>
+                <Col>
+                  <OptionCard
+                    message={"Join Performance"}
+                    onClick={handleChooseJoinPerformance}
+                  />
+                </Col>
+                <Col>
+                  <OptionCard
+                    message={"Create Performance"}
+                    onClick={handleChooseCreatePerformance}
+                  />
+                </Col>
+              </Row>
+            )}
+
             <Form>
               <Form.Switch
                 type="switch"

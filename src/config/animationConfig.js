@@ -10,8 +10,22 @@ export const defaultInFromAboveAnimation = {
   transition: { duration: 1, ease: "easeOut" },
 };
 
+export const fadeInDefaults = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 1,
+      ease: "easeOut",
+      delayChildren: 0.3,
+      staggerChildren: 0.2,
+    },
+  },
+};
+
 export const containerSpellerVariantDefaults = {
-  hidden: { opacity: 1, scale: 0 },
+  hidden: { opacity: 0, scale: 1 },
   visible: {
     opacity: 1,
     scale: 1,

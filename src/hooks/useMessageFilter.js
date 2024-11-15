@@ -120,6 +120,11 @@ export const useMessageFilter = () => {
       case "registration":
         defaultActions();
         break;
+      case "getNewPlayerData":
+        setChatMessage("");
+        setCurrentStep(2);
+        updateCurrentPlayer(message.currentPlayer);
+        break;
       case "newCentralTheme":
         setCurrentStep(2);
         break;
