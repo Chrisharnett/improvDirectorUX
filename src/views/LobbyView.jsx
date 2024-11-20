@@ -5,13 +5,11 @@ import useWebSocket from "../hooks/useWebSocket.jsx";
 import { useEffect } from "react";
 import CentralTheme from "../components/CentralTheme.jsx";
 import Registration from "../components/Registration.jsx";
-import { useUserContext } from "../hooks/useUserContext";
 
 const LobbyView = ({ feedbackQuestion, setChatMessage }) => {
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const { incomingMessage } = useWebSocket();
-  const { updateCurrentPlayer } = useUserContext();
 
   useEffect(() => {
     if (incomingMessage) {
@@ -57,8 +55,6 @@ const LobbyView = ({ feedbackQuestion, setChatMessage }) => {
 
 LobbyView.propTypes = {
   feedbackQuestion: PropTypes.object,
-  setFeedbackQuestion: PropTypes.func,
-  sendMessage: PropTypes.func,
   setChatMessage: PropTypes.func,
 };
 

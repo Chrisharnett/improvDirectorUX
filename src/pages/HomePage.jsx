@@ -5,9 +5,9 @@ import { FadeInContainer } from "../animation/animations";
 import getCognitoURL from "../auth/getCognitoURL";
 
 const HomePage = () => {
-  const [cueWelcomeMessage, setCueWelcomeMessage] = useState(false);
-  const [cueOption1, setCueOption1] = useState(false);
-  const [cueOption2, setCueOption2] = useState(false);
+  const [cueWelcomeMessage, setCueWelcomeMessage] = useState(true);
+  const [cueOption1, setCueOption1] = useState(true);
+  const [cueOption2, setCueOption2] = useState(true);
 
   const handleClickLink = () => {
     const loginUrl = getCognitoURL();
@@ -30,26 +30,36 @@ const HomePage = () => {
         setCueNextAnimation={() => setCueWelcomeMessage(true)}
       >
         {/* Introduction */}
-        <Container
-          className="midlayer glass d-flex m-3 p-2"
-          style={{ height: "auto", width: "auto", textAlign: "center" }}
+        <FadeInContainer
+          startAnimation={cueWelcomeMessage}
+          setCueNextAnimation={() => setCueOption1(true)}
         >
-          <FadeInContainer
-            startAnimation={cueWelcomeMessage}
-            setCueNextAnimation={() => setCueOption1(true)}
+          <Container
+            className="midlayer glass m-3 p-2"
+            style={{ height: "auto", width: "auto", textAlign: "center" }}
           >
+            {" "}
             <h2>Welcome to ImprovDirector!</h2>
-            <p>
-              ImprovDirector is an AI-powered platform that connects musicians
-              and audiences in real-time. Musicians receive AI-generated prompts
-              inspired by live audience feedback, making every performance a
-              unique, interactive experience.
-            </p>
-          </FadeInContainer>
-        </Container>
+            <p>I'm the improvDirector. Let's play music together.</p>
+          </Container>
+        </FadeInContainer>
         {/* Join Links */}
         <Container className="d-flex align-items-center justify-content-center">
           <Row>
+            <Col sm={12} md={12} lg={6}>
+              <FadeInContainer startAnimation={cueOption2}>
+                <Link to="/audience">
+                  <Container
+                    className="midLayer glass flex-column align-items-center"
+                    style={{ cursor: "pointer", width: "auto" }}
+                  >
+                    <h3> Join the Audience </h3>
+                    <p> View a live performance. </p>
+                  </Container>
+                </Link>
+              </FadeInContainer>
+            </Col>
+
             <Col sm={12} md={12} lg={6}>
               <FadeInContainer
                 startAnimation={cueOption1}
@@ -64,20 +74,6 @@ const HomePage = () => {
                   <p> Log in to play music. </p>
                 </Container>
                 {/* )} */}
-              </FadeInContainer>
-            </Col>
-
-            <Col sm={12} md={12} lg={6}>
-              <FadeInContainer startAnimation={cueOption2}>
-                <Link to="/audience">
-                  <Container
-                    className="midLayer glass flex-column align-items-center"
-                    style={{ cursor: "pointer", width: "auto" }}
-                  >
-                    <h3> Join the Audience </h3>
-                    <p> View a live performance. </p>
-                  </Container>
-                </Link>
               </FadeInContainer>
             </Col>
           </Row>

@@ -54,6 +54,7 @@ const CentralTheme = () => {
       JSON.stringify({
         action: "centralThemeResponse",
         roomName: gameState?.roomName,
+        centralTheme: gameState?.centralTheme,
         currentPlayer: currentPlayer,
         playerReaction: { reaction: reaction, suggestion: response },
         token: token,

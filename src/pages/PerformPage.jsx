@@ -1,11 +1,10 @@
 import { Container, Row, Col, Button } from "react-bootstrap";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import MessageCard from "../components/MessageCard.jsx";
 import LobbyView from "../views/LobbyView.jsx";
 import GameView from "../views/GameView.jsx";
 import { MessageModal } from "../modals/MessageModal.jsx";
-import { CSSTransition } from "react-transition-group";
 import { useUserContext } from "../hooks/useUserContext.js";
 import { useGameState } from "../hooks/useGameState.jsx";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";
@@ -37,7 +36,6 @@ const PerformPage = () => {
   const { gameState } = useGameState();
   const { screenName } = currentPlayer || "";
   const { accessToken, isTokenExpired, updateRefreshToken } = useTokenContext();
-  const nodeRef = useRef(null);
   const { filterMessage } = useMessageFilter();
   const { filterResponse } = useResponseFilter();
 
@@ -83,6 +81,12 @@ const PerformPage = () => {
   }, [currentPlayer, ready, initialMessageSent, accessToken, isTokenExpired]);
 
   useEffect(() => {
+    if (modalMessage) {
+      setShowMessageModal(true);
+    }
+  }, [modalMessage]);
+
+  useEffect(() => {
     if (incomingMessage) {
       const message = JSON.parse(incomingMessage);
       filterMessage({
@@ -124,7 +128,7 @@ const PerformPage = () => {
         token: token,
       })
     );
-    setFeedbackQuestion(false);
+    setFeedbackQuestion({});
     resetPlayer();
     showMessageSent();
   };
@@ -144,6 +148,7 @@ const PerformPage = () => {
         return (
           <WelcomeView
             showContainer={showContainer}
+            chatMessage={chatMessage}
             setChatMessage={setChatMessage}
             showMessageSent={showMessageSent}
           />
@@ -204,10 +209,7 @@ const PerformPage = () => {
 
   return (
     <>
-      <FadeInContainer
-        startAnimation={true}
-        // setCueNextAnimation={}
-      >
+      <FadeInContainer startAnimation={true}>
         <>
           <Container className="midLayer glass">
             {gameState?.roomName && <h1>{gameState?.roomName}</h1>}

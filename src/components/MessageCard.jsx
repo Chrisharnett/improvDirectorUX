@@ -3,6 +3,7 @@ import { CSSTransition } from "react-transition-group";
 import { useEffect, useState, useRef } from "react";
 import ResponseBox from "./ResponseBox";
 import PropTypes from "prop-types";
+import { FadeInContainer } from "../animation/animations";
 
 const MessageCard = ({
   message,
@@ -11,16 +12,20 @@ const MessageCard = ({
   responsePlaceholder,
   setResponse,
   handleSubmit,
+  startAnimation,
+  setCueNextAnimation,
 }) => {
   const [showContent, setShowContent] = useState(false);
 
   const nodeRef = useRef(null);
 
   useEffect(() => {
-    if (message) {
+    if (startAnimation) {
+      setShowContent(startAnimation);
+    } else if (message) {
       setShowContent(true);
     }
-  }, [message]);
+  }, [message, startAnimation]);
 
   const handleClickSubmit = (userResponse) => {
     handleSubmit(userResponse);
@@ -29,12 +34,16 @@ const MessageCard = ({
 
   return (
     <>
-      <CSSTransition
+      {/* <CSSTransition
         in={showContent}
         timeout={700}
         classNames="fade"
         nodeRef={nodeRef}
         unmountOnExit
+      > */}
+      <FadeInContainer
+        startAnimation={showContent}
+        setCueNextAnimation={setCueNextAnimation}
       >
         <Card
           className="m-2 p-2"
@@ -61,7 +70,7 @@ const MessageCard = ({
             </Card.Footer>
           </>
         </Card>
-      </CSSTransition>
+      </FadeInContainer>
     </>
   );
 };
@@ -74,6 +83,8 @@ MessageCard.propTypes = {
   responsePlaceholder: PropTypes.string,
   setResponse: PropTypes.func,
   handleSubmit: PropTypes.func,
+  startAnimation: PropTypes.bool,
+  setCueNextAnimation: PropTypes.func,
 };
 
 export default MessageCard;

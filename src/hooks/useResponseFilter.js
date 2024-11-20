@@ -19,39 +19,6 @@ export const useResponseFilter = () => {
     setResponseRequired,
     showMessageSent,
   }) => {
-    // if (responseRequired.responseAction === "newScreenName") {
-    //   const updatedUser = { ...currentPlayer, screenName: response };
-    //   setCurrentPlayer(updatedUser);
-    //   let token = accessToken;
-    //   if (accessToken && isTokenExpired(accessToken)) {
-    //     token = await updateRefreshToken();
-    //   }
-    //   sendMessage(
-    //     JSON.stringify({
-    //       action: "registration",
-    //       gameStatus: "registration",
-    //       currentPlayer: updatedUser,
-    //       token: token,
-    //     })
-    //   );
-    //   showMessageSent();
-    // } else if (responseRequired.responseAction === "newInstrument") {
-    //   const updatedUser = { ...currentPlayer, instrument: response };
-    //   setCurrentPlayer(updatedUser);
-    //   let token = accessToken;
-    //   if (accessToken && isTokenExpired(accessToken)) {
-    //     token = await updateRefreshToken();
-    //   }
-    //   sendMessage(
-    //     JSON.stringify({
-    //       action: "registration",
-    //       gameStatus: "registration",
-    //       currentPlayer: updatedUser,
-    //       token: token,
-    //     })
-    //   );
-    // } else
-
     if (responseRequired === "joinRoom") {
       const roomName = response.toLowerCase().trim();
       updateGameState({ roomName: roomName });

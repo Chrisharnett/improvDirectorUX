@@ -138,16 +138,6 @@ const GameView = () => {
                 md={5}
                 className="d-flex"
               >
-                {/* <AnimatePresence mode="wait">
-                  <motion.span
-                    key={generateUniqueKey(performerPrompt)}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={performerVariants}
-                    transition={{ duration: 0.7 }}
-                    style={{ display: "inline-block" }}
-                  > */}
                 <PromptCard
                   cardKey={generateUniqueKey(performerPrompt)}
                   promptTitle={performerPrompt}
@@ -156,8 +146,6 @@ const GameView = () => {
                   hideButtons={hideButtons}
                   animationDirection={"right"}
                 />
-                {/* </motion.span>
-                </AnimatePresence> */}
               </Col>
             )}
           </>

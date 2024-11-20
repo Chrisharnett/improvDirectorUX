@@ -102,6 +102,11 @@ export const useMessageFilter = () => {
       case "error":
         updateGameState(message.gameState);
         break;
+      case "invalid room name":
+        setModalMessage({ "Invalid Room Name": "I can't find that room" });
+        updateGameState({ roomName: "" });
+        defaultActions();
+        break;
       case "welcome":
         setChatMessage(message.message);
         if (message.responseRequired) {
