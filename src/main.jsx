@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
-import { WebSocketProvider } from "./util/WebSocketContext.jsx";
+import { WebSocketProvider } from "./context/WebSocketContext.jsx";
 import { UserProvider } from "./context/UserContext.jsx";
 import { TokenProvider } from "./context/TokenContext.jsx";
 

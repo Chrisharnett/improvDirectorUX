@@ -1,30 +1,13 @@
-import { Container } from "react-bootstrap";
-import { useState, useEffect, useRef } from "react";
+import { Container, Row, Col } from "react-bootstrap";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CSSTransition } from "react-transition-group";
 import { FadeInContainer } from "../animation/animations";
-import { useUserContext } from "../hooks/useUserContext";
 import getCognitoURL from "../auth/getCognitoURL";
 
 const HomePage = () => {
-  const [showContainer, setShowContainer] = useState(false);
-  const [linkMessage, setLinkMessage] = useState("log in and play music.");
-  const { user } = useUserContext();
-
-  const nodeRef = useRef(null);
-
-  useEffect(() => {
-    if (user) {
-      setLinkMessage("play music.");
-    }
-  }, [user]);
-
-  useEffect(() => {
-    setShowContainer(true);
-    return () => {
-      setShowContainer(false);
-    };
-  }, []);
+  const [cueWelcomeMessage, setCueWelcomeMessage] = useState(true);
+  const [cueOption1, setCueOption1] = useState(true);
+  const [cueOption2, setCueOption2] = useState(true);
 
   const handleClickLink = () => {
     const loginUrl = getCognitoURL();
@@ -32,43 +15,71 @@ const HomePage = () => {
   };
 
   return (
-    <>
-      <CSSTransition
-        in={showContainer}
-        timeout={700}
-        classNames="fade"
-        unmountOnExit
-        nodeRef={nodeRef}
+    <Container
+      className="midlayer glass d-flex m-5"
+      style={{
+        minHeight: "50vh",
+        minWidth: "70vw",
+        textAlign: "center",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <FadeInContainer
+        startAnimation={true}
+        setCueNextAnimation={() => setCueWelcomeMessage(true)}
       >
-        <>
+        {/* Introduction */}
+        <FadeInContainer
+          startAnimation={cueWelcomeMessage}
+          setCueNextAnimation={() => setCueOption1(true)}
+        >
           <Container
-            className="d-flex align-items-center justify-content-center"
-            style={{ height: "70vh", width: "100vw" }}
-            ref={nodeRef}
+            className="midlayer glass m-3 p-2"
+            style={{ height: "auto", width: "auto", textAlign: "center" }}
           >
-            <FadeInContainer startAnimation={true}>
-              {user ? (
-                <Link to="/performPage">
-                  <Container className="midLayer glass d-flex flex-column align-items-center">
-                    <h1> Click Here to </h1>
-                    <h1> {linkMessage} </h1>
+            {" "}
+            <h2>Welcome to ImprovDirector!</h2>
+            <p>I'm the improvDirector. Let's play music together.</p>
+          </Container>
+        </FadeInContainer>
+        {/* Join Links */}
+        <Container className="d-flex align-items-center justify-content-center">
+          <Row>
+            <Col sm={12} md={12} lg={6}>
+              <FadeInContainer startAnimation={cueOption2}>
+                <Link to="/audience">
+                  <Container
+                    className="midLayer glass flex-column align-items-center"
+                    style={{ cursor: "pointer", width: "auto" }}
+                  >
+                    <h3> Join the Audience </h3>
+                    <p> View a live performance. </p>
                   </Container>
                 </Link>
-              ) : (
+              </FadeInContainer>
+            </Col>
+
+            <Col sm={12} md={12} lg={6}>
+              <FadeInContainer
+                startAnimation={cueOption1}
+                setCueNextAnimation={setCueOption2}
+              >
                 <Container
-                  className="midLayer glass d-flex flex-column align-items-center"
+                  className="midLayer glass flex-column align-items-center"
                   onClick={handleClickLink}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", width: "auto" }}
                 >
-                  <h1> Click Here to </h1>
-                  <h1> {linkMessage} </h1>
+                  <h3> Join a Performance </h3>
+                  <p> Log in to play music. </p>
                 </Container>
-              )}
-            </FadeInContainer>
-          </Container>
-        </>
-      </CSSTransition>
-    </>
+                {/* )} */}
+              </FadeInContainer>
+            </Col>
+          </Row>
+        </Container>
+      </FadeInContainer>
+    </Container>
   );
 };
 

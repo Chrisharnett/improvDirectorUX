@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { WebSocketContext } from "../util/WebSocketContext";
+import { WebSocketContext } from "../context/WebSocketContext";
 
 const useWebSocket = () => useContext(WebSocketContext);
 

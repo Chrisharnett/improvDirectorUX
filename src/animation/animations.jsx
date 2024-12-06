@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
 import {
+  fadeInDefaults,
   containerSpellerVariantDefaults,
   itemSpellerVariantDefaults,
 } from "../config/animationConfig";
@@ -11,19 +12,26 @@ export const FadeInContainer = ({
   setCueNextAnimation,
 }) => {
   const handleAnimationComplete = () => {
-    setCueNextAnimation ? setCueNextAnimation(true) : null;
+    if (setCueNextAnimation) {
+      setCueNextAnimation(true);
+    }
   };
 
   return (
-    <motion.div
-      className="animate-list"
-      variants={containerSpellerVariantDefaults}
-      initial="hidden"
-      animate={startAnimation ? "visible" : "hidden"}
-      onAnimationComplete={handleAnimationComplete}
-    >
-      {children}
-    </motion.div>
+    <AnimatePresence>
+      {startAnimation && (
+        <motion.span
+          className="animate-list"
+          variants={fadeInDefaults}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          onAnimationComplete={handleAnimationComplete}
+        >
+          {children}
+        </motion.span>
+      )}
+    </AnimatePresence>
   );
 };
 

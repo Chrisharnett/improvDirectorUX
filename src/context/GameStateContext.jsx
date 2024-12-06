@@ -9,8 +9,10 @@ export const GameStateProvider = ({ children }) => {
   const [gameState, setGameState] = useState({
     roomName: "",
     gameStatus: "",
+    centralTheme: "",
     performers: [],
-    performanceMode: false,
+    prompts: [],
+    finalPrompt: false,
   });
 
   const updateGameState = (updates) => {

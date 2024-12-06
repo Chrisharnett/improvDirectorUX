@@ -1,34 +1,34 @@
-import { Container, Button, Form } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import PropTypes from "prop-types";
 import { useUserContext } from "../hooks/useUserContext.js";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";
+import PlayerProfileCard from "../components/PlayerProfileCard.jsx";
 
 const PlayerProfile = () => {
-  const [newScreenName, setNewScreenName] = useState("");
-  const [newInstrument, setNewInstrument] = useState("");
-  const { sendMessage, incomingMessage, ready } = useWebSocket();
+  const { sendMessage, incomingMessage } = useWebSocket();
   const { currentPlayer, updateCurrentPlayer } = useUserContext();
+  const { screenName, instrument } = currentPlayer;
   const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
 
   useEffect(() => {
-    const sendMessageWhenReady = async () => {
+    const getCurrentPlayer = async () => {
+      let token = accessToken;
       if (accessToken && isTokenExpired(accessToken)) {
-        await updateRefreshToken();
+        token = await updateRefreshToken();
       }
-
       sendMessage(
         JSON.stringify({
           action: "getCurrentPlayer",
           currentPlayer: currentPlayer,
+          token: token,
         })
       );
     };
-    if (ready && currentPlayer?.userId) {
-      sendMessageWhenReady();
+    if (!instrument || !screenName) {
+      getCurrentPlayer();
     }
-  }, [ready, currentPlayer]);
+  }, []);
 
   useEffect(() => {
     if (incomingMessage) {
@@ -42,69 +42,9 @@ const PlayerProfile = () => {
     }
   }, [incomingMessage]);
 
-  const handleUpdateProfile = async () => {
-    updateCurrentPlayer({
-      screenName: newScreenName,
-      instrument: newInstrument,
-    });
-    const player = {
-      ...currentPlayer,
-      screenName: newScreenName,
-      instrument: newInstrument,
-    };
-    if (accessToken && isTokenExpired(accessToken)) {
-      await updateRefreshToken();
-    }
-
-    sendMessage(
-      JSON.stringify({
-        action: "updateProfile",
-        currentPlayer: player,
-      })
-    );
-  };
-
-  const { screenName, instrument } = currentPlayer;
-
   return (
     <>
-      <Container
-        className="d-flex align-items-center justify-content-center"
-        style={{ height: "100vh", width: "100vw" }}
-      >
-        <Form className="midLayer glass d-flex flex-column">
-          <Form.Group className="mb-3" controlId="screenName">
-            <Form.Label>Stage Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={newScreenName || screenName}
-              onChange={(e) => setNewScreenName(e.target.value)}
-              placeholder={screenName || "What should we call you?"}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="screenName">
-            <Form.Label>Instruments and performance style</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={newInstrument || instrument}
-              onChange={(e) => setNewInstrument(e.target.value)}
-              placeholder={
-                instrument || "What do you play? How do you play it?"
-              }
-            />
-          </Form.Group>
-          <Button
-            variant="primary"
-            type="submit"
-            onClick={() => {
-              handleUpdateProfile();
-            }}
-          >
-            Update Profile{" "}
-          </Button>
-        </Form>
-      </Container>
+      <PlayerProfileCard />
     </>
   );
 };

@@ -8,8 +8,7 @@ export const UserContext = createContext();
 
 // Creating the UserProvider component
 export const UserProvider = ({ children }) => {
-  const { accessToken, refreshTokens, saveToken, removeToken, isTokenExpired } =
-    useTokenContext();
+  const { accessToken, removeToken } = useTokenContext();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

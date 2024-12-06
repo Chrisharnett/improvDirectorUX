@@ -3,22 +3,29 @@ import { CSSTransition } from "react-transition-group";
 import { useEffect, useState, useRef } from "react";
 import ResponseBox from "./ResponseBox";
 import PropTypes from "prop-types";
+import { FadeInContainer } from "../animation/animations";
 
 const MessageCard = ({
   message,
+  title,
   responseRequired,
+  responsePlaceholder,
   setResponse,
   handleSubmit,
+  startAnimation,
+  setCueNextAnimation,
 }) => {
   const [showContent, setShowContent] = useState(false);
 
   const nodeRef = useRef(null);
 
   useEffect(() => {
-    if (message) {
+    if (startAnimation) {
+      setShowContent(startAnimation);
+    } else if (message) {
       setShowContent(true);
     }
-  }, [message]);
+  }, [message, startAnimation]);
 
   const handleClickSubmit = (userResponse) => {
     handleSubmit(userResponse);
@@ -27,12 +34,16 @@ const MessageCard = ({
 
   return (
     <>
-      <CSSTransition
+      {/* <CSSTransition
         in={showContent}
         timeout={700}
         classNames="fade"
         nodeRef={nodeRef}
         unmountOnExit
+      > */}
+      <FadeInContainer
+        startAnimation={showContent}
+        setCueNextAnimation={setCueNextAnimation}
       >
         <Card
           className="m-2 p-2"
@@ -47,26 +58,33 @@ const MessageCard = ({
           ref={nodeRef}
         >
           <>
-            <Card.Title className="p-2 fs-4"></Card.Title>
+            <Card.Title className="p-2 fs-4">{title}</Card.Title>
             <Card.Body className="fs-4">{message}</Card.Body>
             <Card.Footer>
               {responseRequired && (
-                <ResponseBox handleSubmit={handleClickSubmit} />
+                <ResponseBox
+                  handleSubmit={handleClickSubmit}
+                  placeHolder={responsePlaceholder}
+                />
               )}
             </Card.Footer>
           </>
         </Card>
-      </CSSTransition>
+      </FadeInContainer>
     </>
   );
 };
 
 MessageCard.propTypes = {
   message: PropTypes.string,
+  title: PropTypes.string,
   response: PropTypes.string,
   responseRequired: PropTypes.string,
+  responsePlaceholder: PropTypes.string,
   setResponse: PropTypes.func,
   handleSubmit: PropTypes.func,
+  startAnimation: PropTypes.bool,
+  setCueNextAnimation: PropTypes.func,
 };
 
 export default MessageCard;

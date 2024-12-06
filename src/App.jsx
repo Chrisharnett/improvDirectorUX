@@ -17,46 +17,6 @@ import Callback from "./auth/Callback.jsx";
 
 function App() {
   const { user } = useUserContext();
-  // const [token, saveToken, ] = useToken();
-  // const [error, setError] = useState(null);
-  // const [currentPlayer, setCurrentPlayer] = useState({});
-  // const loggedIn = useMemo(() => !!token, [token]);
-  // const [codeProcessed, setCodeProcessed] = useState(false);
-  // const { sendMessage, incomingMessage } = useWebSocket();
-
-  // Handle token exchange from URL parameter
-  // useEffect(() => {
-  //   const urlParams = new URLSearchParams(window.location.search);
-  //   const code = urlParams.get("code");
-
-  //   if (code && !codeProcessed) {
-  //     codeForToken(code);
-  //     setCodeProcessed(true);
-  //     window.history.replaceState({}, document.title, window.location.pathname);
-  //   }
-  // }, []);
-
-  // const codeForToken = async (code) => {
-  //   try {
-  //     const callback =
-  //       import.meta.env.VITE_ENV === "prod"
-  //         ? import.meta.env.VITE_COGNITO_CALLBACK_PROD
-  //         : import.meta.env.VITE_COGNITO_CALLBACK_LOCAL;
-  //     const response = await axios.post(
-  //       `${import.meta.env.VITE_AUTH_API}`,
-  //       JSON.stringify({
-  //         code: code,
-  //         redirect_uri: callback,
-  //       })
-  //     );
-  //     const newToken = response.data;
-
-  //     saveToken(newToken);
-  //   } catch (error) {
-  //     console.error("Error fetching token:", error);
-  //     setError(error);
-  //   }
-  // };
 
   useEffect(() => {
     const randomBackground =
@@ -77,15 +37,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            user ? (
-              <Navigate to="/performPage" replace />
-            ) : (
-              <HomePage
-              // loggedIn={loggedIn}
-              />
-            )
-          }
+          element={user ? <Navigate to="/performPage" replace /> : <HomePage />}
         />
         <Route path="/callback" element={<Callback />} />
         <Route path="/about" element={<About />} />
@@ -111,10 +63,7 @@ function App() {
           path="/playerProfile"
           element={
             <PrivateRoute redirectPath="/">
-              <PlayerProfile
-              // currentPlayer={currentPlayer}
-              // setCurrentPlayer={setCurrentPlayer}
-              />
+              <PlayerProfile />
             </PrivateRoute>
           }
         />

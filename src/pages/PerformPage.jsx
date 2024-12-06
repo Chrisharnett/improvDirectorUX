@@ -1,19 +1,17 @@
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
-import { useEffect, useState, useRef } from "react";
+import { Container, Row, Col } from "react-bootstrap";
+import { useEffect, useState } from "react";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import MessageCard from "../components/MessageCard.jsx";
-import OptionCard from "../components/OptionCard.jsx";
-import { v4 as uuidv4 } from "uuid";
 import LobbyView from "../views/LobbyView.jsx";
 import GameView from "../views/GameView.jsx";
 import { MessageModal } from "../modals/MessageModal.jsx";
-import { CSSTransition } from "react-transition-group";
 import { useUserContext } from "../hooks/useUserContext.js";
 import { useGameState } from "../hooks/useGameState.jsx";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";
 import { useMessageFilter } from "../hooks/useMessageFilter.js";
 import { useResponseFilter } from "../hooks/useResponseFilter.js";
 import WelcomeView from "../views/WelcomeView.jsx";
+import { FadeInContainer } from "../animation/animations.jsx";
 
 const PerformPage = () => {
   const [chatMessage, setChatMessage] = useState("");
@@ -35,10 +33,9 @@ const PerformPage = () => {
     loading,
   } = useUserContext();
   const { sendMessage, ready, incomingMessage } = useWebSocket();
-  const { gameState } = useGameState();
+  const { gameState, updateGameState } = useGameState();
   const { screenName } = currentPlayer || "";
   const { accessToken, isTokenExpired, updateRefreshToken } = useTokenContext();
-  const nodeRef = useRef(null);
   const { filterMessage } = useMessageFilter();
   const { filterResponse } = useResponseFilter();
 
@@ -84,6 +81,12 @@ const PerformPage = () => {
   }, [currentPlayer, ready, initialMessageSent, accessToken, isTokenExpired]);
 
   useEffect(() => {
+    if (modalMessage) {
+      setShowMessageModal(true);
+    }
+  }, [modalMessage]);
+
+  useEffect(() => {
     if (incomingMessage) {
       const message = JSON.parse(incomingMessage);
       filterMessage({
@@ -112,20 +115,10 @@ const PerformPage = () => {
   };
 
   const handlePlayAgain = async () => {
-    let token = accessToken;
-    if (accessToken && isTokenExpired(accessToken)) {
-      token = await updateRefreshToken();
-    }
-    sendMessage(
-      JSON.stringify({
-        action: "playAgain",
-        currentPlayer: currentPlayer,
-        roomName: gameState?.roomName,
-        token: token,
-      })
-    );
-    setFeedbackQuestion(false);
+    setChatMessage("");
+    setFeedbackQuestion({});
     resetPlayer();
+    updateGameState({ finalPrompt: false });
     showMessageSent();
   };
 
@@ -144,6 +137,7 @@ const PerformPage = () => {
         return (
           <WelcomeView
             showContainer={showContainer}
+            chatMessage={chatMessage}
             setChatMessage={setChatMessage}
             showMessageSent={showMessageSent}
           />
@@ -155,7 +149,6 @@ const PerformPage = () => {
           <Row className="mt-3">
             <LobbyView
               feedbackQuestion={feedbackQuestion}
-              setFeedbackQuestion={setFeedbackQuestion}
               setChatMessage={setChatMessage}
             />
           </Row>
@@ -165,34 +158,13 @@ const PerformPage = () => {
       case 3:
         return (
           <Row className="mt-3">
-            <GameView />
+            <GameView handlePlayAgain={handlePlayAgain} />
           </Row>
         );
 
       //Debrief
       case 4:
         return <></>;
-
-      //Final Summary
-      case 5:
-        return (
-          <>
-            {currentPlayer?.roomCreator && (
-              <>
-                <Row className="mt-3">
-                  <Button
-                    variant="success"
-                    type="button"
-                    className="w-100"
-                    onClick={handlePlayAgain}
-                  >
-                    {"Play Again!"}
-                  </Button>
-                </Row>
-              </>
-            )}
-          </>
-        );
 
       default:
         break;
@@ -205,15 +177,9 @@ const PerformPage = () => {
 
   return (
     <>
-      <CSSTransition
-        in={showContainer}
-        timeout={700}
-        classNames="fade"
-        nodeRef={nodeRef}
-        unmountOnExit
-      >
+      <FadeInContainer startAnimation={true}>
         <>
-          <Container className="midLayer glass" ref={nodeRef}>
+          <Container className="midLayer glass">
             {gameState?.roomName && <h1>{gameState?.roomName}</h1>}
             {chatMessage && (
               <>
@@ -221,6 +187,7 @@ const PerformPage = () => {
                   message={chatMessage}
                   response={chatResponse}
                   responseRequired={responseRequired}
+                  responsePlaceholder="Enter the room name here."
                   setResponse={setChatResponse}
                   handleSubmit={handleChatResponse}
                 />
@@ -239,7 +206,7 @@ const PerformPage = () => {
             )}
           </Container>
         </>
-      </CSSTransition>
+      </FadeInContainer>
       <MessageModal
         show={showMessageModal}
         setShow={setShowMessageModal}
