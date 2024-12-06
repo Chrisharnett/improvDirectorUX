@@ -13,8 +13,7 @@ import {
 } from "../config/animationConfig.js";
 
 const PromptCard = ({
-  promptTitle,
-  prompt,
+  currentPrompt,
   hideButtons,
   setHideButtons,
   cardKey,
@@ -38,6 +37,8 @@ const PromptCard = ({
     return options[Math.floor(Math.random() * options.length)];
   };
 
+  const { promptTitle, prompt } = currentPrompt || {};
+
   useEffect(() => {
     switch (animationDirection) {
       case "left":
@@ -54,7 +55,6 @@ const PromptCard = ({
         );
         break;
       default:
-        // setAnimationVariant(enterExitRightVariants);
         break;
     }
     setLoaded(true);
@@ -63,15 +63,18 @@ const PromptCard = ({
   useEffect(() => {
     if (promptTitle === "groupPrompt") {
       setTitle("Group");
-    } else if (promptTitle === "endPrompt") {
-      setTitle("Final Prompt");
-      setHideButtons(true);
-    } else if (promptTitle !== "Final Prompt") {
+    } else {
       setTitle(currentPlayer.screenName || promptTitle);
     }
+
+    if (gameState?.finalPrompt) {
+      setHideButtons(true);
+      setTitle("Final Prompt");
+    }
+
     setDisableButtons(false);
     setDisableLikeButton(false);
-  }, [prompt, promptTitle]);
+  }, [promptTitle, gameState, currentPlayer]);
 
   const handleThumbsUp = async () => {
     setDisableLikeButton(true);
@@ -184,8 +187,7 @@ const PromptCard = ({
 };
 
 PromptCard.propTypes = {
-  promptTitle: PropTypes.string,
-  prompt: PropTypes.string,
+  currentPrompt: PropTypes.object,
   hideButtons: PropTypes.bool,
   setHideButtons: PropTypes.func,
   cardKey: PropTypes.string,

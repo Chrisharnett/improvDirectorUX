@@ -1,15 +1,16 @@
 import { Row, Col, Button } from "react-bootstrap";
 import PromptCard from "../components/PromptCard";
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useUserContext } from "../hooks/useUserContext";
 import { useGameState } from "../hooks/useGameState";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";
 
-const GameView = () => {
+const GameView = ({ handlePlayAgain }) => {
   const [buttonText, setButtonText] = useState("Get Ending");
   const [disableButton, setDisableButton] = useState(false);
-  const [promptKeys, setPromptKeys] = useState([]);
+  const [currentGroupPrompt, setCurrentGroupPrompt] = useState("");
+  const [currentPerformerPrompt, setCurrentPerformerPrompt] = useState("");
   const [hideButtons, setHideButtons] = useState(false);
   const { gameState } = useGameState();
   const { roomName, finalPrompt, gameStatus, centralTheme } = gameState;
@@ -17,16 +18,21 @@ const GameView = () => {
   const { sendMessage } = useWebSocket();
   const { accessToken, updateRefreshToken, isTokenExpired } = useTokenContext();
 
-  const refs = useRef({});
-
   useEffect(() => {
-    setPromptKeys(Object.keys(currentPlayer.currentPrompts));
-  }, [currentPlayer.currentPrompts]);
+    const currentPrompt = gameState.prompts[gameState.prompts.length - 1];
+    const currentGroupPrompt = currentPrompt.groupPrompt;
+    setCurrentGroupPrompt(currentGroupPrompt);
+    for (let i = currentPrompt.performerPrompts.length - 1; i >= 0; i--) {
+      if (currentPrompt.performerPrompts[i].userId === currentPlayer.userId) {
+        setCurrentPerformerPrompt(currentPrompt.performerPrompts[i]);
+        break;
+      }
+    }
+  }, [gameState]);
 
   useEffect(() => {
     if (gameStatus === "endSong") {
       setDisableButton(false);
-      setButtonText("End and Log Performance");
       setHideButtons(true);
     } else if (gameStatus === "improvise") {
       setHideButtons(false);
@@ -34,22 +40,6 @@ const GameView = () => {
       setHideButtons(true);
     }
   }, [gameStatus, currentPlayer]);
-
-  useEffect(() => {
-    const newPromptKeys = Object.keys(currentPlayer.currentPrompts);
-    setPromptKeys((prevKeys) => {
-      if (newPromptKeys.length !== prevKeys.length) {
-        return newPromptKeys;
-      }
-      return prevKeys;
-    });
-  }, [currentPlayer]);
-
-  promptKeys.forEach((key) => {
-    if (!refs.current[key]) {
-      refs.current[key] = React.createRef();
-    }
-  });
 
   const handleEndSong = async () => {
     if (currentPlayer.finalPrompt) {
@@ -65,6 +55,7 @@ const GameView = () => {
           token: token,
         })
       );
+      handlePlayAgain();
       setDisableButton(true);
     } else {
       setDisableButton(true);
@@ -83,22 +74,13 @@ const GameView = () => {
     }
   };
 
-  // Separate prompts into two groups: all except performerPrompt, and performerPrompt itself
-  const nonPerformerPrompts = promptKeys.filter(
-    (key) => key !== "performerPrompt"
-  );
-  const performerPrompt = promptKeys.find((key) => key === "performerPrompt");
-
-  const generateUniqueKey = (key) =>
-    `${key}-${currentPlayer.currentPrompts[key]?.prompt}`;
-
   return (
     <>
       <Row className="fs-3 m-2" style={{ width: "80%" }}>
         {centralTheme}
       </Row>
       <Row className="d-flex flex-row flex-wrap justify-content-start">
-        {nonPerformerPrompts.length < 1 && !performerPrompt ? (
+        {!currentGroupPrompt ? (
           <Col sm={12} md={5}>
             <PromptCard
               cardKey={"Waiting"}
@@ -108,49 +90,36 @@ const GameView = () => {
               sendMessage={sendMessage}
               roomName={roomName}
               currentPlayer={currentPlayer}
+              setHideButtons={setHideButtons}
             />
           </Col>
         ) : (
           <>
-            {nonPerformerPrompts.map((nonPerformerPrompt) => {
-              const uniqueKey = generateUniqueKey(nonPerformerPrompt);
-              return (
-                <Col key={uniqueKey} sm={12} md={5} className="d-flex">
-                  <PromptCard
-                    cardKey={uniqueKey}
-                    promptTitle={nonPerformerPrompt}
-                    prompt={
-                      currentPlayer.currentPrompts[nonPerformerPrompt]?.prompt
-                    }
-                    sendMessage={sendMessage}
-                    hideButtons={hideButtons}
-                    setHideButtons={setHideButtons}
-                    animationDirection={"left"}
-                  />
-                </Col>
-              );
-            })}
-
-            {performerPrompt && (
-              <Col
-                key={generateUniqueKey(performerPrompt)}
-                sm={12}
-                md={5}
-                className="d-flex"
-              >
-                <PromptCard
-                  cardKey={generateUniqueKey(performerPrompt)}
-                  promptTitle={performerPrompt}
-                  prompt={currentPlayer.currentPrompts[performerPrompt]?.prompt}
-                  sendMessage={sendMessage}
-                  hideButtons={hideButtons}
-                  animationDirection={"right"}
-                />
-              </Col>
-            )}
+            <Col sm={12} md={5} className="d-flex">
+              <PromptCard
+                cardKey={`${currentGroupPrompt.promptTitle}_${currentGroupPrompt.prompt}`}
+                currentPrompt={currentGroupPrompt}
+                sendMessage={sendMessage}
+                hideButtons={hideButtons}
+                setHideButtons={setHideButtons}
+                animationDirection={"left"}
+              />
+            </Col>
           </>
         )}
-        {(!finalPrompt || (finalPrompt && currentPlayer.roomCreator)) && (
+        {currentPerformerPrompt && (
+          <Col sm={12} md={5} className="d-flex">
+            <PromptCard
+              cardKey={`${currentPerformerPrompt.promptTitle}_${currentPerformerPrompt.prompt}`}
+              currentPrompt={currentPerformerPrompt}
+              sendMessage={sendMessage}
+              hideButtons={hideButtons}
+              setHideButtons={setHideButtons}
+              animationDirection={"right"}
+            />
+          </Col>
+        )}
+        {!finalPrompt ? (
           <Button
             variant="warning"
             type="button"
@@ -160,6 +129,22 @@ const GameView = () => {
           >
             {buttonText}
           </Button>
+        ) : (
+          finalPrompt &&
+          currentPlayer.roomCreator && (
+            <>
+              <Row className="mt-3">
+                <Button
+                  variant="success"
+                  type="button"
+                  className="w-50 m-3"
+                  onClick={handleEndSong}
+                >
+                  {"Play Again!"}
+                </Button>
+              </Row>
+            </>
+          )
         )}
       </Row>
     </>

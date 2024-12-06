@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useGameState } from "../hooks/useGameState.jsx";
 import { useUserContext } from "../hooks/useUserContext.js";
 import { useTokenContext } from "../hooks/useTokenContext.jsx";

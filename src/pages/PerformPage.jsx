@@ -1,4 +1,4 @@
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import useWebSocket from "../hooks/useWebSocket.jsx";
 import MessageCard from "../components/MessageCard.jsx";
@@ -33,7 +33,7 @@ const PerformPage = () => {
     loading,
   } = useUserContext();
   const { sendMessage, ready, incomingMessage } = useWebSocket();
-  const { gameState } = useGameState();
+  const { gameState, updateGameState } = useGameState();
   const { screenName } = currentPlayer || "";
   const { accessToken, isTokenExpired, updateRefreshToken } = useTokenContext();
   const { filterMessage } = useMessageFilter();
@@ -116,20 +116,9 @@ const PerformPage = () => {
 
   const handlePlayAgain = async () => {
     setChatMessage("");
-    let token = accessToken;
-    if (accessToken && isTokenExpired(accessToken)) {
-      token = await updateRefreshToken();
-    }
-    sendMessage(
-      JSON.stringify({
-        action: "playAgain",
-        currentPlayer: currentPlayer,
-        roomName: gameState?.roomName,
-        token: token,
-      })
-    );
     setFeedbackQuestion({});
     resetPlayer();
+    updateGameState({ finalPrompt: false });
     showMessageSent();
   };
 
@@ -169,34 +158,13 @@ const PerformPage = () => {
       case 3:
         return (
           <Row className="mt-3">
-            <GameView />
+            <GameView handlePlayAgain={handlePlayAgain} />
           </Row>
         );
 
       //Debrief
       case 4:
         return <></>;
-
-      //Final Summary
-      case 5:
-        return (
-          <>
-            {currentPlayer?.roomCreator && (
-              <>
-                <Row className="mt-3">
-                  <Button
-                    variant="success"
-                    type="button"
-                    className="w-100"
-                    onClick={handlePlayAgain}
-                  >
-                    {"Play Again!"}
-                  </Button>
-                </Row>
-              </>
-            )}
-          </>
-        );
 
       default:
         break;

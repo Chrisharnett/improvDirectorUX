@@ -3,7 +3,7 @@ import { useUserContext } from "./useUserContext.js";
 import { useGameState } from "./useGameState.jsx";
 
 export const useMessageFilter = () => {
-  const { updateCurrentPlayer, currentPlayer, resetPlayer } = useUserContext();
+  const { updateCurrentPlayer, currentPlayer } = useUserContext();
   const { updateGameState } = useGameState();
 
   const filterMessage = ({
@@ -43,61 +43,56 @@ export const useMessageFilter = () => {
     }
     setShowMessageModal(false);
 
-    switch (gameStatus) {
-      case "registration":
-        defaultActions();
-        break;
+    if (message.action !== "heartbeat") {
+      switch (gameStatus) {
+        case "registration":
+          defaultActions();
+          break;
 
-      case "Waiting To Start": {
-        if (message.action !== "heartbeat") {
-          const userQuestion =
-            message.feedbackQuestion?.questions[currentPlayer.userId];
-          if (userQuestion) {
-            setFeedbackQuestion(userQuestion);
-            setChatMessage(userQuestion.question);
+        case "Waiting To Start": {
+          if (message.action !== "heartbeat") {
+            const userQuestion =
+              message.feedbackQuestion?.questions[currentPlayer.userId];
+            if (userQuestion) {
+              setFeedbackQuestion(userQuestion);
+              setChatMessage(userQuestion.question);
+            }
+            saveNewGameState(message);
+            setCurrentStep(2);
           }
-          saveNewGameState(message);
+          break;
+        }
+
+        case "Theme Selection": {
           setCurrentStep(2);
-        }
-        break;
-      }
-
-      case "Theme Selection": {
-        setCurrentStep(2);
-        saveNewGameState(message);
-        setChatMessage("Let's select a theme for the song.");
-        break;
-      }
-
-      case "improvise":
-        saveNewGameState(message);
-        setChatMessage("");
-        setFeedbackQuestion({});
-        updateCurrentPlayer({ finalPrompt: false });
-        setCurrentStep(3);
-        break;
-
-      case "endSong":
-        if (message.action !== "heartbeat") {
           saveNewGameState(message);
-          updateCurrentPlayer({ finalPrompt: true });
+          setChatMessage("Let's select a theme for the song.");
+          break;
+        }
+
+        case "improvise":
+          saveNewGameState(message);
+          setChatMessage("");
+          setFeedbackQuestion({});
+          updateCurrentPlayer({ finalPrompt: false });
           setCurrentStep(3);
-        }
-        break;
+          break;
 
-      case "debrief":
-        if (message.action !== "heartbeat") {
-          setCurrentStep(5);
-        }
-        break;
+        case "endSong":
+          if (message.action !== "heartbeat") {
+            saveNewGameState(message);
+            updateCurrentPlayer({ finalPrompt: true });
+            setCurrentStep(3);
+          }
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
 
     switch (message.action) {
       case "heartbeat":
-        console.log("bum-bum");
         break;
       case "error":
         updateGameState(message.gameState);
@@ -136,22 +131,7 @@ export const useMessageFilter = () => {
       case "newGameState":
         saveNewGameState(message.gameState);
         break;
-      case "debrief": {
-        const userQuestion =
-          message.feedbackQuestion.questions[currentPlayer.userId];
-        setResponseRequired(message.responseRequired);
-        setChatMessage(userQuestion);
-        setFeedbackQuestion(userQuestion);
-        updateGameState({ gameStatus: "debrief" });
-        setCurrentStep(4);
-        break;
-      }
-      case "finalSummary":
-        updateGameState({ gameStatus: message.gameStatus });
-        setChatMessage(message.summary);
-        resetPlayer();
-        setCurrentStep(5);
-        break;
+
       default:
         break;
     }
